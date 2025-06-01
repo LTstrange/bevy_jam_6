@@ -163,7 +163,7 @@ jobs:
 
           # web environment:
           if [ '${{ matrix.platform }}' = 'web' ]; then
-            echo "RUSTFLAGS='--cfg getrandom_backend=\"wasm_js\"'" >> "${GITHUB_ENV}"
+            echo "RUSTFLAGS=--cfg getrandom_backend=\"wasm_js\"" >> "${GITHUB_ENV}"
           fi
 
           # Check if building for this platform is enabled.
