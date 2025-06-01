@@ -117,8 +117,6 @@ jobs:
             targets: wasm32-unknown-unknown
             package_ext: .zip
             runner: ubuntu-latest
-            env:
-              RUSTFLAGS: --cfg getrandom_backend="wasm_js"
 
           - platform: linux
             targets: x86_64-unknown-linux-gnu
@@ -161,6 +159,11 @@ jobs:
           if [ '${{ matrix.platform }}' = 'macos' ]; then
             echo 'MACOSX_DEPLOYMENT_TARGET=11.0' >> "${GITHUB_ENV}" # macOS 11.0 Big Sur is the first version to support universal binaries.
             echo "SDKROOT=$(xcrun --sdk macosx --show-sdk-path)" >> "${GITHUB_ENV}"
+          fi
+
+          # web environment:
+          if [ '${{ matrix.platform }}' = 'web' ]; then
+            echo "RUSTFLAGS='--cfg getrandom_backend=\"wasm_js\"'" >> "${GITHUB_ENV}"
           fi
 
           # Check if building for this platform is enabled.
