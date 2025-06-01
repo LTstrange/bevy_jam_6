@@ -10,9 +10,19 @@ mod dev_tools;
 mod menus;
 mod screens;
 mod theme;
+mod visual_effect;
 
 use bevy::{asset::AssetMetaCheck, prelude::*};
 use bevy_asset_loader::prelude::*;
+use bevy_rand::{plugin::EntropyPlugin, prelude::WyRand};
+
+mod prelude {
+    pub use bevy::prelude::*;
+    pub use bevy_asset_loader::prelude::*;
+
+    pub use crate::screens::Screen;
+    pub use crate::{AppSystems, AssetsState, PausableSystems};
+}
 
 fn main() -> AppExit {
     App::new().add_plugins(AppPlugin).run()
@@ -49,6 +59,9 @@ impl Plugin for AppPlugin {
             LoadingState::new(AssetsState::Loading).continue_to_state(AssetsState::Done),
         );
 
+        // add third-party plugins
+        app.add_plugins((EntropyPlugin::<WyRand>::default(),));
+
         // Add other plugins.
         app.add_plugins((
             audio::plugin,
@@ -58,6 +71,7 @@ impl Plugin for AppPlugin {
             menus::plugin,
             screens::plugin,
             theme::plugin,
+            visual_effect::plugin,
         ));
 
         // Order new `AppSystems` variants by adding them here:
@@ -84,7 +98,7 @@ impl Plugin for AppPlugin {
 /// When adding a new variant, make sure to order it in the `configure_sets`
 /// call above.
 #[derive(SystemSet, Debug, Clone, Copy, Eq, PartialEq, Hash, PartialOrd, Ord)]
-enum AppSystems {
+pub enum AppSystems {
     /// Tick timers.
     TickTimers,
     /// Record player input.
@@ -100,14 +114,14 @@ struct Pause(pub bool);
 
 /// A system set for systems that shouldn't run while the game is paused.
 #[derive(SystemSet, Copy, Clone, Eq, PartialEq, Hash, Debug)]
-struct PausableSystems;
+pub struct PausableSystems;
 
 fn spawn_camera(mut commands: Commands) {
     commands.spawn((Name::new("Camera"), Camera2d));
 }
 
 #[derive(States, Copy, Clone, Eq, PartialEq, Hash, Debug, Default)]
-pub(crate) enum AssetsState {
+pub enum AssetsState {
     #[default]
     Loading,
     Done,

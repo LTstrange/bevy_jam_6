@@ -5,16 +5,16 @@
 
 use bevy::prelude::*;
 
-mod animation;
+mod attacker;
+mod dust;
+mod dust_spawner;
 pub mod level;
-mod movement;
-pub mod player;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins((
-        animation::plugin,
         level::plugin,
-        movement::plugin,
-        player::plugin,
+        dust::plugin,
+        dust_spawner::plugin,
+        attacker::plugin,
     ));
 }

@@ -1,7 +1,6 @@
-use bevy::prelude::*;
-use bevy_asset_loader::prelude::*;
+use crate::prelude::*;
 
-use crate::{AssetsState, audio::sound_effect};
+use crate::audio::sound_effect;
 
 pub(super) fn plugin(app: &mut App) {
     app.configure_loading_state(
@@ -51,16 +50,6 @@ struct InteractionAssets {
     #[asset(path = "audio/sound_effects/button_click.ogg")]
     click: Handle<AudioSource>,
 }
-
-// impl FromWorld for InteractionAssets {
-//     fn from_world(world: &mut World) -> Self {
-//         let assets = world.resource::<AssetServer>();
-//         Self {
-//             hover: assets.load("audio/sound_effects/button_hover.ogg"),
-//             click: assets.load("audio/sound_effects/button_click.ogg"),
-//         }
-//     }
-// }
 
 fn play_on_hover_sound_effect(
     trigger: Trigger<Pointer<Over>>,
