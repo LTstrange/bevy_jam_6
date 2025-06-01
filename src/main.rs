@@ -91,6 +91,8 @@ impl Plugin for AppPlugin {
 
         // Spawn the main camera.
         app.add_systems(Startup, spawn_camera);
+        // back ground color : sky blue
+        app.insert_resource(ClearColor(Color::srgb(0.58, 0.686, 0.773)));
     }
 }
 

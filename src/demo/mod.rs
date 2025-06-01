@@ -8,6 +8,7 @@ use bevy::prelude::*;
 mod attacker;
 mod dust;
 mod dust_spawner;
+mod inventory;
 pub mod level;
 
 pub(super) fn plugin(app: &mut App) {
@@ -16,5 +17,6 @@ pub(super) fn plugin(app: &mut App) {
         dust::plugin,
         dust_spawner::plugin,
         attacker::plugin,
+        inventory::plugin,
     ));
 }

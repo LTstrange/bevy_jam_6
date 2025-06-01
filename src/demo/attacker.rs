@@ -4,7 +4,7 @@ use rand::seq::IndexedRandom;
 
 use crate::{audio::sound_effect, prelude::*, visual_effect::AttackLine};
 
-use super::dust::Dust;
+use super::{dust::Dust, inventory::Inventory};
 
 pub(super) fn plugin(app: &mut App) {
     app.configure_loading_state(
@@ -104,10 +104,13 @@ fn deal_attack_event(
     dust_query: Query<&Transform, With<Dust>>,
     attacker_assets: Res<AttackerAssets>,
     mut global_entropy: GlobalEntropy<WyRand>,
+    mut inventory: ResMut<Inventory>,
 ) -> Result {
+    let mut score = 0;
     for &AttackDustEvent { source, target } in event_reader.read() {
         let dust = dust_query.get(target)?;
         commands.entity(target).despawn();
+        score += 1;
         commands.spawn((
             Name::new("Dust Attack Effect"),
             Transform::from_translation(dust.translation),
@@ -129,7 +132,8 @@ fn deal_attack_event(
             },
         ));
     }
-    // todo: draw a line between source and target
-
+    if score != 0 {
+        inventory.score += score;
+    }
     Ok(())
 }

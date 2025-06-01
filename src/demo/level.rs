@@ -3,7 +3,13 @@
 use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
 
-use crate::{AssetsState, audio::music, demo::attacker::attacker, screens::Screen};
+use crate::{
+    AssetsState,
+    audio::music,
+    demo::{attacker::attacker, inventory::inventory_ui},
+    screens::Screen,
+    theme::widget::{self},
+};
 
 use super::dust_spawner::dust_spawner;
 
@@ -38,5 +44,18 @@ pub fn spawn_level(mut commands: Commands, level_assets: Res<LevelAssets>) {
             dust_spawner(),
             attacker(Vec2::new(0.0, 0.0), 1.0),
         ],
+    ));
+
+    // ingame ui
+    commands.spawn((
+        Name::new("Ingame UI"),
+        Node {
+            width: Val::Percent(100.0),
+            height: Val::Percent(100.0),
+            ..default()
+        },
+        StateScoped(Screen::Gameplay),
+        GlobalZIndex(1),
+        children![inventory_ui()],
     ));
 }
