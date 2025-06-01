@@ -20,3 +20,9 @@ pub(super) fn plugin(app: &mut App) {
         inventory::plugin,
     ));
 }
+
+#[derive(Resource, Reflect, Debug, Default)]
+#[reflect(Resource)]
+struct GameplayState {
+    attack_energy: f32,
+}
