@@ -6,7 +6,7 @@ use bevy::{
     prelude::*,
 };
 
-use crate::{AppSystems, screens::Screen, theme::prelude::*};
+use crate::{AppSystems, AssetsState, screens::Screen, theme::prelude::*};
 
 pub(super) fn plugin(app: &mut App) {
     // Spawn splash screen.
@@ -31,7 +31,9 @@ pub(super) fn plugin(app: &mut App) {
         Update,
         (
             tick_splash_timer.in_set(AppSystems::TickTimers),
-            check_splash_timer.in_set(AppSystems::Update),
+            check_splash_timer
+                .in_set(AppSystems::Update)
+                .run_if(in_state(AssetsState::Done)),
         )
             .run_if(in_state(Screen::Splash)),
     );
@@ -39,8 +41,11 @@ pub(super) fn plugin(app: &mut App) {
     // Exit the splash screen early if the player hits escape.
     app.add_systems(
         Update,
-        enter_title_screen
-            .run_if(input_just_pressed(KeyCode::Escape).and(in_state(Screen::Splash))),
+        enter_title_screen.run_if(
+            input_just_pressed(KeyCode::Escape)
+                .and(in_state(Screen::Splash))
+                .and(in_state(AssetsState::Done)),
+        ),
     );
 }
 
@@ -49,6 +54,7 @@ const SPLASH_DURATION_SECS: f32 = 1.8;
 const SPLASH_FADE_DURATION_SECS: f32 = 0.6;
 
 fn spawn_splash_screen(mut commands: Commands, asset_server: Res<AssetServer>) {
+    info!("Spawning splash screen.");
     commands.spawn((
         widget::ui_root("Splash Screen"),
         BackgroundColor(SPLASH_BACKGROUND_COLOR),

@@ -3,7 +3,6 @@
 // Disable console on Windows for non-dev builds.
 #![cfg_attr(not(feature = "dev"), windows_subsystem = "windows")]
 
-mod asset_tracking;
 mod audio;
 mod demo;
 #[cfg(feature = "dev")]
@@ -13,6 +12,7 @@ mod screens;
 mod theme;
 
 use bevy::{asset::AssetMetaCheck, prelude::*};
+use bevy_asset_loader::prelude::*;
 
 fn main() -> AppExit {
     App::new().add_plugins(AppPlugin).run()
@@ -43,9 +43,14 @@ impl Plugin for AppPlugin {
                 }),
         );
 
+        // setup asset loader
+        app.init_state::<AssetsState>();
+        app.add_loading_state(
+            LoadingState::new(AssetsState::Loading).continue_to_state(AssetsState::Done),
+        );
+
         // Add other plugins.
         app.add_plugins((
-            asset_tracking::plugin,
             audio::plugin,
             demo::plugin,
             #[cfg(feature = "dev")]
@@ -99,4 +104,11 @@ struct PausableSystems;
 
 fn spawn_camera(mut commands: Commands) {
     commands.spawn((Name::new("Camera"), Camera2d));
+}
+
+#[derive(States, Copy, Clone, Eq, PartialEq, Hash, Debug, Default)]
+pub(crate) enum AssetsState {
+    #[default]
+    Loading,
+    Done,
 }

@@ -11,6 +11,7 @@ pub(super) fn plugin(app: &mut App) {
 
 fn open_main_menu(mut next_menu: ResMut<NextState<Menu>>) {
     next_menu.set(Menu::Main);
+    info!("Opening main menu on title screen.");
 }
 
 fn close_menu(mut next_menu: ResMut<NextState<Menu>>) {
