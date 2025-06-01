@@ -1,4 +1,3 @@
-use bevy::{color::palettes::css::*, prelude::*};
 use bevy_rand::prelude::{Entropy, WyRand};
 use rand::prelude::Rng;
 

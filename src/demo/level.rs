@@ -8,7 +8,6 @@ use crate::{
     audio::music,
     demo::{attacker::attacker, inventory::inventory_ui},
     screens::Screen,
-    theme::widget::{self},
 };
 
 use super::dust_spawner::dust_spawner;
