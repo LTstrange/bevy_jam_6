@@ -84,7 +84,6 @@ fn attack_dust(
 ) {
     for (mut attacker, mut entropy, transform) in attacker {
         if attacker.timer.just_finished() {
-            info!("Attacker gen damage");
             commands.spawn(generate_damage(
                 transform.translation.truncate(),
                 player_stats.attack_energy,

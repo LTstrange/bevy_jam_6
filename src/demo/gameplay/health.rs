@@ -6,7 +6,7 @@ use bevy::{
 use crate::prelude::*;
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_systems(Update, update_health_bar);
+    app.add_systems(Update, (update_health_bar, toggle_health_bar));
 }
 
 #[derive(Component, Reflect, Debug)]
@@ -39,56 +39,84 @@ impl Health {
 
 #[derive(Component, Reflect, Debug)]
 #[reflect(Component)]
-struct HealthBar(Vec2);
+struct HealthBar(Vec2, Entity);
+
+#[derive(Component, Reflect, Debug)]
+#[reflect(Component)]
+#[require(Transform)]
+struct HealthBarCompose;
 
 pub fn health_bar_ui(health: u32, offset: Vec2, size: Vec2) -> impl Bundle {
-    let anchor = offset - size / 2.0;
     (
         Health::new(health),
         Children::spawn(SpawnWith(move |parent: &mut RelatedSpawner<_>| {
+            let parent_entity = parent.target_entity();
             parent.spawn((
-                Sprite {
-                    color: WHITE.into(),
-                    custom_size: Some(size),
-                    anchor: bevy::sprite::Anchor::BottomLeft,
-                    ..Default::default()
-                },
-                Transform::from_translation(anchor.extend(0.0)),
-            ));
-            // underlying red bar
-            parent.spawn((
-                HealthBar(size),
-                Sprite {
-                    color: RED.into(),
-                    custom_size: Some(Vec2::new(size.x - 2.0, size.y - 2.0)),
-                    anchor: bevy::sprite::Anchor::BottomLeft,
-                    ..Default::default()
-                },
-                Transform::from_translation((anchor + Vec2::ONE).extend(0.1)),
-            ));
-            // upper green bar
-            parent.spawn((
-                HealthBar(size),
-                Sprite {
-                    color: GREEN.into(),
-                    custom_size: Some(Vec2::new(size.x * 0.8, size.y - 2.0)), // 80.0 只是示例，实际应根据血量调整
-                    anchor: bevy::sprite::Anchor::BottomLeft,
-                    ..Default::default()
-                },
-                Transform::from_translation((anchor + Vec2::ONE).extend(0.2)), // 让绿色条在红色条上方
+                HealthBarCompose,
+                Visibility::Hidden,
+                health_bar_compose(offset, size, parent_entity),
             ));
         })),
     )
 }
 
+fn health_bar_compose(offset: Vec2, size: Vec2, parent: Entity) -> impl Bundle {
+    let anchor = offset - size / 2.0;
+    children![
+        (
+            Sprite {
+                color: WHITE.into(),
+                custom_size: Some(size),
+                anchor: bevy::sprite::Anchor::BottomLeft,
+                ..Default::default()
+            },
+            Transform::from_translation(anchor.extend(0.0)),
+        ),
+        (
+            Sprite {
+                color: RED.into(),
+                custom_size: Some(Vec2::new(size.x - 2.0, size.y - 2.0)),
+                anchor: bevy::sprite::Anchor::BottomLeft,
+                ..Default::default()
+            },
+            Transform::from_translation((anchor + Vec2::ONE).extend(0.1)),
+        ),
+        (
+            HealthBar(size, parent),
+            Sprite {
+                color: GREEN.into(),
+                custom_size: Some(Vec2::new(size.x * 0.8, size.y - 2.0)), // 80.0 只是示例，实际应根据血量调整
+                anchor: bevy::sprite::Anchor::BottomLeft,
+                ..Default::default()
+            },
+            Transform::from_translation((anchor + Vec2::ONE).extend(0.2)), // 让绿色条在红色条上方
+        ),
+    ]
+}
+
 fn update_health_bar(
-    health_bar: Query<(&mut Sprite, &ChildOf, &HealthBar)>,
+    health_bar: Query<(&mut Sprite, &HealthBar)>,
     parents: Query<&Health>,
 ) -> Result {
-    for (mut sprite, parent, HealthBar(size)) in health_bar {
-        let Health { current, max } = parents.get(parent.0)?;
+    for (mut sprite, HealthBar(size, parent)) in health_bar {
+        let Health { current, max } = parents.get(*parent)?;
         let ratio = *current as f32 / *max as f32;
         sprite.custom_size = Some(Vec2::new((size.x - 2.0) * ratio, size.y - 2.0));
+    }
+    Ok(())
+}
+
+fn toggle_health_bar(
+    health_bar: Query<(&ChildOf, &mut Visibility), With<HealthBarCompose>>,
+    health: Query<&Health>,
+) -> Result {
+    for (ChildOf(parent), mut visibility) in health_bar {
+        let parent_health = health.get(*parent)?;
+        if parent_health.is_max_health() {
+            *visibility = Visibility::Hidden;
+        } else {
+            *visibility = Visibility::Visible;
+        }
     }
     Ok(())
 }

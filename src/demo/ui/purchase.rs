@@ -37,7 +37,7 @@ pub fn purchase_ui() -> impl Bundle {
         },
         children![
             header("Research Lab"),
-            row!("Upgrade Attack", 10, ChangePlayerStats::AddAttackEnergy(5)),
+            row!("Upgrade Attack", 10, ChangePlayerStats::AddAttackEnergy(2)),
             row!("New Attacker", 50, SpawnAttacker),
             // row("Upgrade Speed", 200.0),
             // row("Upgrade Range", 300.0)

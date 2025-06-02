@@ -35,7 +35,6 @@ pub fn generate_damage(
     damage_type: DamageType,
     entropy: Entropy<WyRand>,
 ) -> impl Bundle {
-    info!("generating damage entity");
     (
         Name::new("Lightning Damage"),
         Transform::from_translation(pos.extend(0.0)),
