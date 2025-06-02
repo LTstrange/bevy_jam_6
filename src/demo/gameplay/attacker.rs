@@ -112,3 +112,7 @@ fn attack_dust(
         }
     }
 }
+
+fn mouse_attacker(mouse: Single<&Transform, With<MouseTracker>>) {
+    // if mouse.translation
+}

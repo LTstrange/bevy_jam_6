@@ -33,13 +33,13 @@ fn spawn_dust(mut commands: Commands, spawner: Single<(&mut DustSpawner, &mut En
     let (spawner, mut entropy) = spawner.into_inner();
     if spawner.timer.just_finished() {
         let pos = Vec2::new(
-            entropy.random_range(-GAME_AREA.x / 2.0..GAME_AREA.x / 2.0),
-            GAME_AREA.y / 2.0,
+            entropy.random_range(GAME_AREA.min.x..GAME_AREA.max.x),
+            GAME_AREA.max.y,
         );
         commands.spawn(dust(pos, entropy.random_range(80.0..120.0)));
     }
 }
 
 fn gizmos(mut gizmos: Gizmos) {
-    gizmos.rect_2d(Isometry2d::default(), GAME_AREA, Color::BLACK);
+    gizmos.rect_2d(Isometry2d::default(), GAME_AREA.size(), Color::BLACK);
 }

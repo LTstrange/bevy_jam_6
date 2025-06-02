@@ -4,6 +4,7 @@
 #![cfg_attr(not(feature = "dev"), windows_subsystem = "windows")]
 
 mod audio;
+mod camera;
 mod demo;
 #[cfg(feature = "dev")]
 mod dev_tools;
@@ -23,6 +24,7 @@ mod prelude {
     pub use bevy_rand::prelude::*;
     pub use rand::prelude::*;
 
+    pub use crate::camera::MouseTracker;
     pub use crate::screens::Screen;
     pub use crate::utils::*;
     pub use crate::{AppSystems, AssetsState};
@@ -76,6 +78,7 @@ impl Plugin for AppPlugin {
             screens::plugin,
             theme::plugin,
             visual_effect::plugin,
+            camera::plugin,
         ));
 
         // Order new `AppSystems` variants by adding them here:
@@ -94,8 +97,6 @@ impl Plugin for AppPlugin {
         app.init_state::<Pause>();
         app.configure_sets(Update, PausableSystems.run_if(in_state(Pause(false))));
 
-        // Spawn the main camera.
-        app.add_systems(Startup, spawn_camera);
         // back ground color : sky blue
         app.insert_resource(ClearColor(Color::srgb(0.58, 0.686, 0.773)));
     }
@@ -122,10 +123,6 @@ struct Pause(pub bool);
 /// A system set for systems that shouldn't run while the game is paused.
 #[derive(SystemSet, Copy, Clone, Eq, PartialEq, Hash, Debug)]
 pub struct PausableSystems;
-
-fn spawn_camera(mut commands: Commands) {
-    commands.spawn((Name::new("Camera"), Camera2d));
-}
 
 #[derive(States, Copy, Clone, Eq, PartialEq, Hash, Debug, Default)]
 pub enum AssetsState {

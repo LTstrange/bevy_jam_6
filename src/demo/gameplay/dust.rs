@@ -45,7 +45,7 @@ fn falling_dust(query: Query<(&mut Transform, &Velocity), With<Dust>>, time: Res
 
 fn despawn_dust(mut commands: Commands, query: Query<(Entity, &Transform), With<Dust>>) {
     for (entity, transform) in query.iter() {
-        if transform.translation.y < -GAME_AREA.y / 2.0 {
+        if transform.translation.y < GAME_AREA.min.y {
             commands.entity(entity).despawn();
         }
     }

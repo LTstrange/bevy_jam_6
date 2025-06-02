@@ -39,7 +39,7 @@ pub fn spawn_level(mut commands: Commands, level_assets: Res<LevelAssets>) {
             dust_spawner(),
         ],
     ));
-    commands.trigger(SpawnAttacker);
+    // commands.trigger(SpawnAttacker);
 
     // ingame ui
     commands.spawn((

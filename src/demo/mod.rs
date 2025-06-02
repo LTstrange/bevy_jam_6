@@ -4,7 +4,10 @@ mod gameplay;
 pub mod level;
 mod ui;
 
-const GAME_AREA: Vec2 = Vec2::new(400.0, 600.0);
+const GAME_AREA: Rect = Rect {
+    min: Vec2::new(-200.0, -300.0),
+    max: Vec2::new(200.0, 300.0),
+};
 
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins((level::plugin, ui::plugin, gameplay::plugin));
