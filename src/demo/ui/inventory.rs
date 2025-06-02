@@ -1,6 +1,6 @@
 use bevy::ecs::{relationship::RelatedSpawner, spawn::SpawnWith};
 
-use crate::prelude::*;
+use crate::{prelude::*, theme::widget::label};
 
 pub(super) fn plugin(app: &mut App) {
     app.init_resource::<Inventory>()
@@ -15,14 +15,14 @@ pub(super) fn plugin(app: &mut App) {
 #[derive(Resource, Reflect, Debug, Default)]
 #[reflect(Resource)]
 pub struct Inventory {
-    pub score: u32,
+    pub dust_data: u32,
 }
 
 #[derive(Component, Reflect, Debug)]
 #[reflect(Component)]
 #[allow(non_camel_case_types)]
 enum InventoryFields {
-    score,
+    dust_data,
 }
 
 pub fn inventory_ui() -> impl Bundle {
@@ -30,10 +30,7 @@ pub fn inventory_ui() -> impl Bundle {
         Name::new("Inventory UI"),
         Node::default(),
         StateScoped(Screen::Gameplay),
-        Text("Score: ".to_string()),
-        Children::spawn(SpawnWith(|parent: &mut RelatedSpawner<_>| {
-            parent.spawn((TextSpan::new("0"), InventoryFields::score));
-        })),
+        children![row("Dust Data: ", InventoryFields::dust_data)],
     )
 }
 
@@ -43,9 +40,18 @@ fn update_inventory_ui(
 ) {
     for (mut textspan, field) in textspans.iter_mut() {
         match field {
-            InventoryFields::score => {
-                textspan.0 = inventory.score.to_string();
+            InventoryFields::dust_data => {
+                textspan.0 = inventory.dust_data.to_string();
             }
         }
     }
+}
+
+fn row(label_text: impl Into<String>, ui_marker: InventoryFields) -> impl Bundle {
+    (
+        label(label_text.into()),
+        Children::spawn(SpawnWith(|parent: &mut RelatedSpawner<_>| {
+            parent.spawn((TextSpan::new("0"), ui_marker));
+        })),
+    )
 }

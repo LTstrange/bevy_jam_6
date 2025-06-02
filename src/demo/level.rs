@@ -3,14 +3,10 @@
 use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
 
-use crate::{
-    AssetsState,
-    audio::music,
-    demo::{attacker::attacker, inventory::inventory_ui},
-    screens::Screen,
-};
+use crate::{AssetsState, audio::music, screens::Screen};
 
-use super::dust_spawner::dust_spawner;
+use super::gameplay::*;
+use super::ui::{inventory::inventory_ui, purchase::purchase_ui};
 
 pub(super) fn plugin(app: &mut App) {
     app.configure_loading_state(
@@ -51,10 +47,13 @@ pub fn spawn_level(mut commands: Commands, level_assets: Res<LevelAssets>) {
         Node {
             width: Val::Percent(100.0),
             height: Val::Percent(100.0),
+            flex_direction: FlexDirection::Row,
+            justify_content: JustifyContent::SpaceBetween,
+            padding: UiRect::all(Val::Px(10.0)),
             ..default()
         },
         StateScoped(Screen::Gameplay),
         GlobalZIndex(1),
-        children![inventory_ui()],
+        children![inventory_ui(), purchase_ui()],
     ));
 }

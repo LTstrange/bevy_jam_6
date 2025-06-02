@@ -3,4 +3,5 @@
     "workbench.editor.customLabels.patterns": {
         "**/mod.rs": "${dirname}/mod.rs"
     },
+    "rust-analyzer.check.command": "clippy"
 }

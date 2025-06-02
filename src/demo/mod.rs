@@ -5,24 +5,20 @@
 
 use bevy::prelude::*;
 
-mod attacker;
-mod dust;
-mod dust_spawner;
-mod inventory;
+mod gameplay;
 pub mod level;
+mod ui;
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_plugins((
-        level::plugin,
-        dust::plugin,
-        dust_spawner::plugin,
-        attacker::plugin,
-        inventory::plugin,
-    ));
+    app.add_plugins((level::plugin, ui::plugin, gameplay::plugin));
+
+    app.insert_resource(PlayerStats {
+        attack_energy: 5.0, // Initial attack energy
+    });
 }
 
 #[derive(Resource, Reflect, Debug, Default)]
 #[reflect(Resource)]
-struct GameplayState {
+struct PlayerStats {
     attack_energy: f32,
 }

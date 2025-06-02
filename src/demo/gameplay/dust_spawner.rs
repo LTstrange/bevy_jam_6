@@ -19,7 +19,7 @@ pub(super) fn plugin(app: &mut App) {
     );
 }
 
-pub(super) fn dust_spawner() -> impl Bundle {
+pub fn dust_spawner() -> impl Bundle {
     (
         Name::new("Dust Spawner"),
         StateScoped(Screen::Gameplay),

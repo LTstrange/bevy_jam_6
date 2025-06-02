@@ -4,7 +4,7 @@ use rand::seq::IndexedRandom;
 
 use crate::{audio::sound_effect, prelude::*, visual_effect::AttackLine};
 
-use super::{dust::Dust, inventory::Inventory};
+use super::{super::ui::inventory::Inventory, dust::Dust};
 
 pub(super) fn plugin(app: &mut App) {
     app.configure_loading_state(
@@ -133,7 +133,7 @@ fn deal_attack_event(
         ));
     }
     if score != 0 {
-        inventory.score += score;
+        inventory.dust_data += score;
     }
     Ok(())
 }

@@ -58,6 +58,7 @@ where
 {
     button_base(
         text,
+        TextFont::from_font_size(40.0),
         action,
         (
             Node {
@@ -81,6 +82,7 @@ where
 {
     button_base(
         text,
+        TextFont::from_font_size(40.0),
         action,
         Node {
             width: Px(30.0),
@@ -93,8 +95,9 @@ where
 }
 
 /// A simple button with text and an action defined as an [`Observer`]. The button's layout is provided by `button_bundle`.
-fn button_base<E, B, M, I>(
+pub fn button_base<E, B, M, I>(
     text: impl Into<String>,
+    font: TextFont,
     action: I,
     button_bundle: impl Bundle,
 ) -> impl Bundle
@@ -122,7 +125,7 @@ where
                     children![(
                         Name::new("Button Text"),
                         Text(text),
-                        TextFont::from_font_size(40.0),
+                        font,
                         TextColor(BUTTON_TEXT),
                         // Don't bubble picking events from the text up to the button.
                         Pickable::IGNORE,
