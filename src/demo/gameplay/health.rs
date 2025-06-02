@@ -1,16 +1,93 @@
+use bevy::{
+    color::palettes::css::*,
+    ecs::{relationship::RelatedSpawner, spawn::SpawnWith},
+};
+
 use crate::prelude::*;
 
-pub(super) fn plugin(_app: &mut App) {}
+pub(super) fn plugin(app: &mut App) {
+    app.add_systems(Update, update_health_bar);
+}
 
 #[derive(Component, Reflect, Debug)]
 #[reflect(Component)]
 pub struct Health {
-    current: f32,
-    max: f32,
+    current: u32,
+    max: u32,
 }
 
 impl Health {
-    pub fn new(max: f32) -> Self {
+    pub fn new(max: u32) -> Self {
         Self { current: max, max }
     }
+    pub fn apply_damage(&mut self, damage: u32) {
+        self.current -= damage.min(self.current);
+    }
+    pub fn is_alive(&self) -> bool {
+        self.current > 0
+    }
+
+    pub fn is_max_health(&self) -> bool {
+        self.current >= self.max
+    }
+
+    pub fn heal(&mut self, amount: u32) {
+        self.current = (self.current + amount).min(self.max);
+    }
+}
+
+#[derive(Component, Reflect, Debug)]
+#[reflect(Component)]
+struct HealthBar(Vec2);
+
+pub fn health_bar_ui(health: u32, offset: Vec2, size: Vec2) -> impl Bundle {
+    let anchor = offset - size / 2.0;
+    (
+        Health::new(health),
+        Children::spawn(SpawnWith(move |parent: &mut RelatedSpawner<_>| {
+            parent.spawn((
+                Sprite {
+                    color: WHITE.into(),
+                    custom_size: Some(size),
+                    anchor: bevy::sprite::Anchor::BottomLeft,
+                    ..Default::default()
+                },
+                Transform::from_translation(anchor.extend(0.0)),
+            ));
+            // underlying red bar
+            parent.spawn((
+                HealthBar(size),
+                Sprite {
+                    color: RED.into(),
+                    custom_size: Some(Vec2::new(size.x - 2.0, size.y - 2.0)),
+                    anchor: bevy::sprite::Anchor::BottomLeft,
+                    ..Default::default()
+                },
+                Transform::from_translation((anchor + Vec2::ONE).extend(0.1)),
+            ));
+            // upper green bar
+            parent.spawn((
+                HealthBar(size),
+                Sprite {
+                    color: GREEN.into(),
+                    custom_size: Some(Vec2::new(size.x * 0.8, size.y - 2.0)), // 80.0 只是示例，实际应根据血量调整
+                    anchor: bevy::sprite::Anchor::BottomLeft,
+                    ..Default::default()
+                },
+                Transform::from_translation((anchor + Vec2::ONE).extend(0.2)), // 让绿色条在红色条上方
+            ));
+        })),
+    )
+}
+
+fn update_health_bar(
+    health_bar: Query<(&mut Sprite, &ChildOf, &HealthBar)>,
+    parents: Query<&Health>,
+) -> Result {
+    for (mut sprite, parent, HealthBar(size)) in health_bar {
+        let Health { current, max } = parents.get(parent.0)?;
+        let ratio = *current as f32 / *max as f32;
+        sprite.custom_size = Some(Vec2::new((size.x - 2.0) * ratio, size.y - 2.0));
+    }
+    Ok(())
 }

@@ -16,27 +16,13 @@ pub(super) fn plugin(app: &mut App) {
         (attack_dust.run_if(resource_exists::<AttackerAssets>),).in_set(AppSystems::Update),
     );
 
-    app.add_systems(
-        Update,
-        (|mut commands: Commands, player_stats: Res<PlayerStats>, mut previous: Local<bool>| {
-            if !player_stats.draggable_attacker {
-                return;
+    app.add_observer(
+        |t: Trigger<Pointer<Drag>>, mut attackers: Query<&mut Transform, With<Attacker>>| {
+            if let Ok(mut transform) = attackers.get_mut(t.target()) {
+                transform.translation.x += t.delta.x;
+                transform.translation.y -= t.delta.y;
             }
-            if *previous {
-                return;
-            }
-            *previous = true;
-            commands.add_observer(
-                |t: Trigger<Pointer<Drag>>,
-                 mut attackers: Query<&mut Transform, With<Attacker>>| {
-                    if let Ok(mut transform) = attackers.get_mut(t.target()) {
-                        transform.translation.x += t.delta.x;
-                        transform.translation.y -= t.delta.y;
-                    }
-                },
-            );
-        })
-        .run_if(resource_changed::<PlayerStats>),
+        },
     );
 
     app.add_observer(
@@ -98,6 +84,7 @@ fn attack_dust(
 ) {
     for (mut attacker, mut entropy, transform) in attacker {
         if attacker.timer.just_finished() {
+            info!("Attacker gen damage");
             commands.spawn(generate_damage(
                 transform.translation.truncate(),
                 player_stats.attack_energy,
@@ -111,8 +98,4 @@ fn attack_dust(
             attacker.timer.reset();
         }
     }
-}
-
-fn mouse_attacker(mouse: Single<&Transform, With<MouseTracker>>) {
-    // if mouse.translation
 }

@@ -88,6 +88,7 @@ impl Plugin for AppPlugin {
                 AppSystems::TickTimers,
                 AppSystems::RecordInput,
                 AppSystems::Update,
+                AppSystems::Cleanup,
             )
                 .chain()
                 .in_set(PausableSystems),
@@ -113,6 +114,8 @@ pub enum AppSystems {
     RecordInput,
     /// Do everything else (consider splitting this into further variants).
     Update,
+    /// Cleanup entity
+    Cleanup,
 }
 
 /// Whether or not the game is paused.

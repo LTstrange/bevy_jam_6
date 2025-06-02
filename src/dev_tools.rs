@@ -11,6 +11,7 @@ use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
 use crate::screens::Screen;
 
 pub(super) fn plugin(app: &mut App) {
+    // // inspector egui
     // app.add_plugins(EguiPlugin {
     //     enable_multipass_for_primary_context: true,
     // })
