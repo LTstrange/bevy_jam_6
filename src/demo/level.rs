@@ -2,6 +2,7 @@
 
 use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
+use bevy_rand::prelude::*;
 
 use crate::{AssetsState, audio::music, screens::Screen};
 
@@ -24,8 +25,13 @@ pub struct LevelAssets {
 }
 
 /// A system that spawns the main level.
-pub fn spawn_level(mut commands: Commands, level_assets: Res<LevelAssets>) {
+pub fn spawn_level(
+    mut commands: Commands,
+    level_assets: Res<LevelAssets>,
+    mut entropy: GlobalEntropy<WyRand>,
+) {
     info!("Spawn level");
+
     commands.spawn((
         Name::new("Level"),
         Transform::default(),
@@ -37,7 +43,7 @@ pub fn spawn_level(mut commands: Commands, level_assets: Res<LevelAssets>) {
                 music(level_assets.music.clone())
             ),
             dust_spawner(),
-            attacker(Vec2::new(0.0, 0.0), 1.0),
+            attacker(Vec2::new(0.0, 0.0), 1.0, entropy.fork_rng()),
         ],
     ));
 

@@ -5,18 +5,8 @@ use super::dust::dust;
 use crate::prelude::*;
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_systems(
-        Update,
-        tick_spawner_timer
-            .in_set(AppSystems::TickTimers)
-            .in_set(PausableSystems),
-    );
-    app.add_systems(
-        Update,
-        (spawn_dust,)
-            .in_set(AppSystems::Update)
-            .in_set(PausableSystems),
-    );
+    app.add_systems(Update, tick_spawner_timer.in_set(AppSystems::TickTimers));
+    app.add_systems(Update, (spawn_dust,).in_set(AppSystems::Update));
 }
 
 pub fn dust_spawner() -> impl Bundle {

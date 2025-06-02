@@ -6,7 +6,7 @@ use bevy::{
     prelude::*,
 };
 
-use crate::{AppSystems, AssetsState, screens::Screen, theme::prelude::*};
+use crate::{AssetsState, screens::Screen, theme::prelude::*};
 
 pub(super) fn plugin(app: &mut App) {
     // Spawn splash screen.
@@ -16,10 +16,8 @@ pub(super) fn plugin(app: &mut App) {
     // Animate splash screen.
     app.add_systems(
         Update,
-        (
-            tick_fade_in_out.in_set(AppSystems::TickTimers),
-            apply_fade_in_out.in_set(AppSystems::Update),
-        )
+        (tick_fade_in_out, apply_fade_in_out)
+            .chain()
             .run_if(in_state(Screen::Splash)),
     );
 
@@ -30,11 +28,10 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(
         Update,
         (
-            tick_splash_timer.in_set(AppSystems::TickTimers),
-            check_splash_timer
-                .in_set(AppSystems::Update)
-                .run_if(in_state(AssetsState::Done)),
+            tick_splash_timer,
+            check_splash_timer.run_if(in_state(AssetsState::Done)),
         )
+            .chain()
             .run_if(in_state(Screen::Splash)),
     );
 

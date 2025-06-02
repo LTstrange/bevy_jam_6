@@ -9,15 +9,16 @@ pub(super) fn plugin(app: &mut App) {
     // );
     app.add_systems(
         Update,
-        (falling_dust, despawn_dust)
-            .in_set(AppSystems::Update)
-            .in_set(PausableSystems),
+        (falling_dust, despawn_dust).in_set(AppSystems::Update),
     );
 }
 
 #[derive(Component, Reflect, Debug)]
 #[reflect(Component)]
 pub(super) struct Dust;
+
+// TODO: impl health component for dust
+pub const DUST_HEALTH: f32 = 5.0;
 
 pub fn dust(pos: Vec2) -> impl Bundle {
     (

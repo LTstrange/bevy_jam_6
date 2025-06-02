@@ -19,6 +19,8 @@ use bevy_rand::{plugin::EntropyPlugin, prelude::WyRand};
 mod prelude {
     pub use bevy::prelude::*;
     pub use bevy_asset_loader::prelude::*;
+    pub use bevy_rand::prelude::*;
+    pub use rand::prelude::*;
 
     pub use crate::screens::Screen;
     pub use crate::{AppSystems, AssetsState, PausableSystems};
@@ -82,7 +84,8 @@ impl Plugin for AppPlugin {
                 AppSystems::RecordInput,
                 AppSystems::Update,
             )
-                .chain(),
+                .chain()
+                .in_set(PausableSystems),
         );
 
         // Set up the `Pause` state.
