@@ -18,6 +18,7 @@ use bevy::{asset::AssetMetaCheck, prelude::*};
 use bevy_asset_loader::prelude::*;
 use bevy_rand::{plugin::EntropyPlugin, prelude::WyRand};
 
+#[allow(unused_imports)]
 mod prelude {
     pub use bevy::prelude::*;
     pub use bevy_asset_loader::prelude::*;

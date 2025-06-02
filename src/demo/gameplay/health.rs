@@ -16,6 +16,7 @@ pub struct Health {
     max: u32,
 }
 
+#[allow(dead_code)]
 impl Health {
     pub fn new(max: u32) -> Self {
         Self { current: max, max }
