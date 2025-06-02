@@ -10,6 +10,7 @@ mod dev_tools;
 mod menus;
 mod screens;
 mod theme;
+mod utils;
 mod visual_effect;
 
 use bevy::{asset::AssetMetaCheck, prelude::*};
@@ -23,6 +24,7 @@ mod prelude {
     pub use rand::prelude::*;
 
     pub use crate::screens::Screen;
+    pub use crate::utils::*;
     pub use crate::{AppSystems, AssetsState, PausableSystems};
 }
 

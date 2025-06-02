@@ -146,11 +146,7 @@ fn lightning_effect(dust_pos: Vec2, source: Vec2) -> impl Bundle {
         StateScoped(Screen::Gameplay),
         TempoEffect::new(0.1),
         Transform::from_translation(dust_pos.extend(0.0)),
-        Sprite {
-            custom_size: Some(Vec2::new(16.0, 16.0)),
-            color: ORANGE.into(),
-            ..default()
-        },
+        Sprite::from_color(ORANGE, Vec2::new(16.0, 16.0)),
         AttackLine {
             start: source,
             end: dust_pos,

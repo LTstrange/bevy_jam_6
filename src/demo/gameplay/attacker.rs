@@ -1,4 +1,7 @@
-use bevy::color::palettes::css::*;
+use bevy::{
+    color::palettes::css::*,
+    ecs::{component::HookContext, world::DeferredWorld},
+};
 use rand::seq::IndexedRandom;
 
 use crate::{audio::sound_effect, demo::PlayerStats, prelude::*};
@@ -14,6 +17,29 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(
         Update,
         (attack_dust.run_if(resource_exists::<AttackerAssets>),).in_set(AppSystems::Update),
+    );
+
+    app.add_systems(
+        Update,
+        (|mut commands: Commands, player_stats: Res<PlayerStats>, mut previous: Local<bool>| {
+            if !player_stats.dragable_attacker {
+                return;
+            }
+            if *previous {
+                return;
+            }
+            *previous = true;
+            commands.add_observer(
+                |t: Trigger<Pointer<Drag>>,
+                 mut attackers: Query<&mut Transform, With<Attacker>>| {
+                    if let Ok(mut transform) = attackers.get_mut(t.target()) {
+                        transform.translation.x += t.delta.x;
+                        transform.translation.y -= t.delta.y;
+                    }
+                },
+            );
+        })
+        .run_if(resource_changed::<PlayerStats>),
     );
 }
 
@@ -45,18 +71,15 @@ pub fn attacker(pos: Vec2, attack_interval: f32, entropy: Entropy<WyRand>) -> im
             timer: Timer::from_seconds(attack_interval, TimerMode::Once),
         },
         entropy,
-        Transform::from_translation(pos.extend(0.0)),
+        Transform::from_translation(pos.extend(1.0)),
         StateScoped(Screen::Gameplay),
-        Sprite {
-            custom_size: Some(Vec2::new(16.0, 16.0)),
-            color: RED.into(),
-            ..default()
-        },
+        Sprite::from_color(RED, Vec2::new(16.0, 16.0)),
+        Pickable::default(),
     )
 }
 
-fn tick_attacker_timer(mut query: Query<&mut Attacker>, time: Res<Time>) {
-    for mut attacker in query.iter_mut() {
+fn tick_attacker_timer(query: Query<&mut Attacker>, time: Res<Time>) {
+    for mut attacker in query {
         attacker.timer.tick(time.delta());
     }
 }

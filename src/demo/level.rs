@@ -43,7 +43,7 @@ pub fn spawn_level(
                 music(level_assets.music.clone())
             ),
             dust_spawner(),
-            attacker(Vec2::new(0.0, 0.0), 1.0, entropy.fork_rng()),
+            attacker(Vec2::ZERO, 1.0, entropy.fork_rng())
         ],
     ));
 
@@ -60,6 +60,7 @@ pub fn spawn_level(
         },
         StateScoped(Screen::Gameplay),
         GlobalZIndex(1),
+        Pickable::IGNORE,
         children![inventory_ui(), purchase_ui()],
     ));
 }
