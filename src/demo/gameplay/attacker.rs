@@ -19,7 +19,7 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(
         Update,
         (|mut commands: Commands, player_stats: Res<PlayerStats>, mut previous: Local<bool>| {
-            if !player_stats.dragable_attacker {
+            if !player_stats.draggable_attacker {
                 return;
             }
             if *previous {

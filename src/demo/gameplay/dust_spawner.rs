@@ -1,6 +1,3 @@
-use bevy_rand::prelude::{Entropy, WyRand};
-use rand::prelude::Rng;
-
 use super::dust::dust;
 use crate::{demo::GAME_AREA, prelude::*};
 

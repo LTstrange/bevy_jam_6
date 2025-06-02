@@ -1,9 +1,4 @@
-//! Demo gameplay. All of these modules are only intended for demonstration
-//! purposes and should be replaced with your own game logic.
-//! Feel free to change the logic found here if you feel like tinkering around
-//! to get a feeling for the template.
-
-use bevy::prelude::*;
+use crate::prelude::*;
 
 mod gameplay;
 pub mod level;
@@ -15,8 +10,8 @@ pub(super) fn plugin(app: &mut App) {
     app.add_plugins((level::plugin, ui::plugin, gameplay::plugin));
 
     app.insert_resource(PlayerStats {
-        attack_energy: 5.0,       // Initial attack energy
-        dragable_attacker: false, // Whether the attacker can be dragged
+        attack_energy: 5.0,        // Initial attack energy
+        draggable_attacker: false, // Whether the attacker can be dragged
     });
 
     app.add_observer(
@@ -26,8 +21,8 @@ pub(super) fn plugin(app: &mut App) {
                 info!("Added attack energy: {}", amount);
             }
             ChangePlayerStats::SetDraggableAttacker(value) => {
-                player_stats.dragable_attacker = *value;
-                info!("Set dragable attacker: {}", value);
+                player_stats.draggable_attacker = *value;
+                info!("Set draggable attacker: {}", value);
             }
         },
     );
@@ -37,7 +32,7 @@ pub(super) fn plugin(app: &mut App) {
 #[reflect(Resource)]
 struct PlayerStats {
     pub attack_energy: f32,
-    pub dragable_attacker: bool,
+    pub draggable_attacker: bool,
 }
 
 #[derive(Event, Debug)]
