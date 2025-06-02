@@ -10,7 +10,7 @@ use super::inventory;
 pub(super) fn plugin(_app: &mut App) {}
 
 macro_rules! row {
-    ($item:expr, price: $price:expr, $event:expr) => {
+    ($item:expr, $price:expr, $event:expr) => {
         row(
             $item,
             $price,
@@ -39,17 +39,17 @@ pub fn purchase_ui() -> impl Bundle {
             header("Research Lab"),
             row!(
                 "Upgrade Attack",
-                price: 10,
+                10,
                 ChangePlayerStats::AddAttackEnergy(5.0)
             ),
             row!(
                 "Draggable Attacker",
-                price: 20,
-                ChangePlayerStats::SetDragableAttacker(true)
+                20,
+                ChangePlayerStats::SetDraggableAttacker(true)
             ),
-            row!("New Attacker", price: 50, SpawnAttacker),
-            // row("Upgrade Speed", price: 200.0),
-            // row("Upgrade Range", price: 300.0)
+            row!("New Attacker", 50, SpawnAttacker),
+            // row("Upgrade Speed", 200.0),
+            // row("Upgrade Range", 300.0)
         ],
     )
 }

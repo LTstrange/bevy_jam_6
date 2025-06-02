@@ -25,7 +25,7 @@ pub(super) fn plugin(app: &mut App) {
                 player_stats.attack_energy += amount;
                 info!("Added attack energy: {}", amount);
             }
-            ChangePlayerStats::SetDragableAttacker(value) => {
+            ChangePlayerStats::SetDraggableAttacker(value) => {
                 player_stats.dragable_attacker = *value;
                 info!("Set dragable attacker: {}", value);
             }
@@ -43,5 +43,5 @@ struct PlayerStats {
 #[derive(Event, Debug)]
 pub enum ChangePlayerStats {
     AddAttackEnergy(f32),
-    SetDragableAttacker(bool),
+    SetDraggableAttacker(bool),
 }
