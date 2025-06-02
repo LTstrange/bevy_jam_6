@@ -1,6 +1,9 @@
 use bevy::ecs::{relationship::RelatedSpawner, spawn::SpawnWith};
 
-use crate::{prelude::*, theme::widget::label};
+use crate::{
+    prelude::*,
+    theme::widget::{header, label},
+};
 
 pub(super) fn plugin(app: &mut App) {
     app.init_resource::<Inventory>()
@@ -28,9 +31,15 @@ enum InventoryFields {
 pub fn inventory_ui() -> impl Bundle {
     (
         Name::new("Inventory UI"),
-        Node::default(),
+        Node {
+            flex_direction: FlexDirection::Column,
+            ..default()
+        },
         StateScoped(Screen::Gameplay),
-        children![row("Dust Data: ", InventoryFields::dust_data)],
+        children![
+            header("Data Center"),
+            row("Dust Data: ", InventoryFields::dust_data)
+        ],
     )
 }
 

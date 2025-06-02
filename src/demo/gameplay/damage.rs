@@ -61,6 +61,7 @@ fn deal_damage(
     )>,
     dust: Query<(Entity, &Transform), With<Dust>>,
 ) {
+    let mut attacked_dust = vec![];
     for (damage_entity, Damage { amount }, damage_type, damage_transform, mut entropy) in damages {
         match damage_type {
             DamageType::Lightning => {
@@ -76,11 +77,13 @@ fn deal_damage(
                             .distance_squared(damage_transform.translation.truncate())
                             < LIGHTING_RANGE * LIGHTING_RANGE // radius squared
                     })
+                    .filter(|(e, _)| !attacked_dust.contains(e))
                     .map(|(entity, _)| entity)
                     .collect::<Vec<_>>()
                     .choose(&mut entropy)
                 {
                     if *amount >= DUST_HEALTH {
+                        attacked_dust.push(dust_entity);
                         commands.send_event(AttackDustEvent {
                             source: damage_transform.translation.truncate(),
                             target: dust_entity,

@@ -25,7 +25,7 @@ mod prelude {
 
     pub use crate::screens::Screen;
     pub use crate::utils::*;
-    pub use crate::{AppSystems, AssetsState, PausableSystems};
+    pub use crate::{AppSystems, AssetsState};
 }
 
 fn main() -> AppExit {

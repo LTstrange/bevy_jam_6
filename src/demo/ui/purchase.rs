@@ -1,11 +1,32 @@
+use crate::demo::ChangePlayerStats;
+use crate::demo::gameplay::SpawnAttacker;
 use crate::prelude::*;
-use crate::theme::widget::{button_base, label};
+use crate::theme::widget::{button_base, header, label};
 use bevy::ecs::system::IntoObserverSystem;
 use bevy::ui::Val::*;
 
-use super::{super::PlayerStats, inventory};
+use super::inventory;
 
-pub(super) fn plugin(app: &mut App) {}
+pub(super) fn plugin(_app: &mut App) {}
+
+macro_rules! row {
+    ($item:expr, price: $price:expr, $event:expr) => {
+        row(
+            $item,
+            $price,
+            |_t: Trigger<Pointer<Click>>,
+             mut inventory: ResMut<inventory::Inventory>,
+             mut commands: Commands| {
+                if inventory.dust_data >= $price {
+                    inventory.dust_data -= $price;
+                    commands.trigger($event);
+                } else {
+                    info!("Not enough data to purchase.");
+                }
+            },
+        )
+    };
+}
 
 pub fn purchase_ui() -> impl Bundle {
     (
@@ -15,15 +36,25 @@ pub fn purchase_ui() -> impl Bundle {
             ..default()
         },
         children![
-            row("Upgrade Attack", 10.0, upgrade_attack),
-            row("Draggable Attacker", 20.0, enable_dragging),
-            // row("Upgrade Speed", 200.0),
-            // row("Upgrade Range", 300.0)
+            header("Research Lab"),
+            row!(
+                "Upgrade Attack",
+                price: 10,
+                ChangePlayerStats::AddAttackEnergy(5.0)
+            ),
+            row!(
+                "Draggable Attacker",
+                price: 20,
+                ChangePlayerStats::SetDragableAttacker(true)
+            ),
+            row!("New Attacker", price: 50, SpawnAttacker),
+            // row("Upgrade Speed", price: 200.0),
+            // row("Upgrade Range", price: 300.0)
         ],
     )
 }
 
-fn row<E, B, M, I>(item: impl Into<String>, price: f32, action: I) -> impl Bundle
+fn row<E, B, M, I>(item: impl Into<String>, price: u32, action: I) -> impl Bundle
 where
     E: Event,
     B: Bundle,
@@ -66,30 +97,4 @@ where
             ..default()
         },
     )
-}
-
-fn upgrade_attack(
-    _t: Trigger<Pointer<Click>>,
-    mut inventory: ResMut<inventory::Inventory>,
-    mut player_stats: ResMut<PlayerStats>,
-) {
-    // Check if the player has enough score to upgrade
-    if inventory.dust_data >= 10 {
-        // Deduct the cost from the inventory score
-        inventory.dust_data -= 10;
-        // Here you would also increase the attack energy or whatever is needed
-        // For demonstration, we just log the upgrade
-        player_stats.attack_energy += 5.0; // Example upgrade
-        info!(
-            "Attack upgraded! New attack energy: {}",
-            player_stats.attack_energy
-        );
-    } else {
-        info!("Not enough score to upgrade attack.");
-    }
-}
-
-fn enable_dragging(_t: Trigger<Pointer<Click>>, mut player_stats: ResMut<PlayerStats>) {
-    player_stats.dragable_attacker = true;
-    info!("Dragging attacker enabled");
 }

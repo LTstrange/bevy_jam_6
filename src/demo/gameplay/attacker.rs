@@ -1,7 +1,4 @@
-use bevy::{
-    color::palettes::css::*,
-    ecs::{component::HookContext, world::DeferredWorld},
-};
+use bevy::color::palettes::css::*;
 use rand::seq::IndexedRandom;
 
 use crate::{audio::sound_effect, demo::PlayerStats, prelude::*};
@@ -41,6 +38,12 @@ pub(super) fn plugin(app: &mut App) {
         })
         .run_if(resource_changed::<PlayerStats>),
     );
+
+    app.add_observer(
+        |_: Trigger<SpawnAttacker>, mut commands: Commands, mut entropy: GlobalEntropy<WyRand>| {
+            commands.spawn(attacker(Vec2::ZERO, 1.0, entropy.fork_rng()));
+        },
+    );
 }
 
 #[derive(Component, Reflect, Debug)]
@@ -48,6 +51,9 @@ pub(super) fn plugin(app: &mut App) {
 struct Attacker {
     timer: Timer,
 }
+
+#[derive(Event, Debug)]
+pub struct SpawnAttacker;
 
 #[derive(Resource, Reflect, Debug, Default, AssetCollection)]
 #[reflect(Resource)]

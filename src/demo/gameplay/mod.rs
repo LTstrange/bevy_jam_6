@@ -6,7 +6,7 @@ mod dust;
 mod dust_spawner;
 mod health;
 
-pub use attacker::attacker;
+pub use attacker::SpawnAttacker;
 pub use dust_spawner::dust_spawner;
 
 pub(super) fn plugin(app: &mut App) {

@@ -18,6 +18,19 @@ pub(super) fn plugin(app: &mut App) {
         attack_energy: 5.0,       // Initial attack energy
         dragable_attacker: false, // Whether the attacker can be dragged
     });
+
+    app.add_observer(
+        |t: Trigger<ChangePlayerStats>, mut player_stats: ResMut<PlayerStats>| match t.event() {
+            ChangePlayerStats::AddAttackEnergy(amount) => {
+                player_stats.attack_energy += amount;
+                info!("Added attack energy: {}", amount);
+            }
+            ChangePlayerStats::SetDragableAttacker(value) => {
+                player_stats.dragable_attacker = *value;
+                info!("Set dragable attacker: {}", value);
+            }
+        },
+    );
 }
 
 #[derive(Resource, Reflect, Debug, Default)]
@@ -25,4 +38,10 @@ pub(super) fn plugin(app: &mut App) {
 struct PlayerStats {
     pub attack_energy: f32,
     pub dragable_attacker: bool,
+}
+
+#[derive(Event, Debug)]
+pub enum ChangePlayerStats {
+    AddAttackEnergy(f32),
+    SetDragableAttacker(bool),
 }

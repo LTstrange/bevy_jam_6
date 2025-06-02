@@ -43,7 +43,7 @@ fn spawn_credits_menu(mut commands: Commands) {
 }
 
 fn created_by() -> impl Bundle {
-    grid(vec![["LTstrange", "Author of the game"]])
+    grid(vec![["LTstrange", "Creator"]])
 }
 
 fn assets() -> impl Bundle {
