@@ -1,25 +1,32 @@
+use bevy::ecs::relationship::RelatedSpawner;
+use bevy::ecs::spawn::SpawnWith;
+
+use super::inventory;
+use super::widget;
+
 use crate::demo::ChangePlayerStats;
 use crate::demo::gameplay::SpawnAttacker;
 use crate::prelude::*;
-use crate::theme::widget::{button_base, header, label};
-use bevy::ecs::system::IntoObserverSystem;
-use bevy::ui::Val::*;
 
-use super::inventory;
-
-pub(super) fn plugin(_app: &mut App) {}
+pub(super) fn plugin(app: &mut App) {
+    app.init_resource::<ShopState>();
+    app.add_observer(update_purchase_ui);
+}
 
 macro_rules! row {
-    ($item:expr, $price:expr, $event:expr) => {
-        row(
+    ($item:expr, $price:expr, $event:expr, $upgrade_item:expr) => {
+        widget::row(
             $item,
             $price,
-            |_t: Trigger<Pointer<Click>>,
-             mut inventory: ResMut<inventory::Inventory>,
-             mut commands: Commands| {
+            move |_t: Trigger<Pointer<Click>>,
+                  mut inventory: ResMut<inventory::Inventory>,
+                  mut commands: Commands,
+                  mut shop_state: ResMut<ShopState>| {
                 if inventory.dust_data >= $price {
                     inventory.dust_data -= $price;
+                    shop_state.update_by_event($upgrade_item);
                     commands.trigger($event);
+                    commands.trigger(PurchaseUIChanged);
                 } else {
                     info!("Not enough data to purchase.");
                 }
@@ -28,64 +35,116 @@ macro_rules! row {
     };
 }
 
-pub fn purchase_ui() -> impl Bundle {
-    (
-        Name::new("Purchase UI"),
-        Node {
-            flex_direction: FlexDirection::Column,
-            ..default()
-        },
-        children![
-            header("Research Lab"),
-            row!("Upgrade Attack", 10, ChangePlayerStats::AddAttackEnergy(2)),
-            row!("New Attacker", 50, SpawnAttacker),
-            // row("Upgrade Speed", 200.0),
-            // row("Upgrade Range", 300.0)
-        ],
-    )
+#[derive(Component, Reflect, Debug)]
+#[reflect(Component)]
+struct PurchaseUI;
+
+#[derive(Event, Debug)]
+struct PurchaseUIChanged;
+
+fn update_purchase_ui(
+    _: Trigger<PurchaseUIChanged>,
+    ui: Single<(Entity, &ChildOf), With<PurchaseUI>>,
+    mut commands: Commands,
+    shop_state: Res<ShopState>,
+) {
+    let (ui, parent) = *ui;
+    commands.entity(ui).despawn();
+    commands.entity(parent.0).with_child(shop_state.render());
 }
 
-fn row<E, B, M, I>(item: impl Into<String>, price: u32, action: I) -> impl Bundle
-where
-    E: Event,
-    B: Bundle,
-    I: IntoObserverSystem<E, B, M>,
-{
-    (
-        Name::new("Row"),
-        Node {
-            width: Val::Percent(100.0),
-            height: Val::Px(50.0),
-            column_gap: Px(10.0),
-            flex_direction: FlexDirection::Row,
-            justify_content: JustifyContent::SpaceBetween,
-            align_items: AlignItems::Center,
-            ..default()
-        },
-        BorderRadius::all(Val::Px(5.0)),
-        children![
-            label(item.into()),
-            purchase_button(format!("{}", price), action),
-        ],
-    )
+pub trait Upgrades {
+    fn row(&self, level: usize) -> Option<impl Bundle>;
 }
 
-fn purchase_button<E, B, M, I>(text: impl Into<String>, action: I) -> impl Bundle
-where
-    E: Event,
-    B: Bundle,
-    I: IntoObserverSystem<E, B, M>,
-{
-    button_base(
-        text,
-        TextFont::from_font_size(24.0),
-        action,
-        Node {
-            width: Px(30.0),
-            height: Px(30.0),
-            align_items: AlignItems::Center,
-            justify_content: JustifyContent::Center,
-            ..default()
-        },
-    )
+const ATTACK_UPGRADES: AttackUpgrades = AttackUpgrades {
+    item_name: "Upgrade Attack",
+    levels: &[(5, 2), (10, 3), (20, 4)],
+};
+
+struct AttackUpgrades {
+    item_name: &'static str,
+    levels: &'static [(u32, u32)],
+}
+
+impl Upgrades for AttackUpgrades {
+    fn row(&self, level: usize) -> Option<impl Bundle> {
+        if let Some(&(price, effect)) = self.levels.get(level) {
+            Some(row!(
+                self.item_name,
+                price,
+                ChangePlayerStats::AddAttackEnergy(effect),
+                UpgradeItems::AttackUpgrade
+            ))
+        } else {
+            None
+        }
+    }
+}
+
+const BUY_SPAWNERS: BuySpawners = BuySpawners {
+    item_name: "Buy Spawner",
+    levels: &[50],
+};
+struct BuySpawners {
+    item_name: &'static str,
+    levels: &'static [u32],
+}
+
+impl Upgrades for BuySpawners {
+    fn row(&self, level: usize) -> Option<impl Bundle> {
+        if let Some(&price) = self.levels.get(level) {
+            Some(row!(
+                self.item_name,
+                price,
+                SpawnAttacker,
+                UpgradeItems::BuySpawner
+            ))
+        } else {
+            None
+        }
+    }
+}
+
+#[derive(Resource, Reflect, Debug, Default, Clone)]
+#[reflect(Resource)]
+pub struct ShopState {
+    attack_upgrade_level: usize,
+    buy_spawner_level: usize,
+}
+
+enum UpgradeItems {
+    AttackUpgrade,
+    BuySpawner,
+}
+
+impl ShopState {
+    pub fn render(&self) -> impl Bundle {
+        let levels = self.clone();
+        (
+            Name::new("Purchase UI"),
+            PurchaseUI,
+            Node {
+                flex_direction: FlexDirection::Column,
+                ..default()
+            },
+            Children::spawn(SpawnWith(move |parent: &mut RelatedSpawner<_>| {
+                parent.spawn(widget::header("Research Lab"));
+                if let Some(row) = ATTACK_UPGRADES.row(levels.attack_upgrade_level) {
+                    parent.spawn(row);
+                }
+                if let Some(row) = BUY_SPAWNERS.row(levels.buy_spawner_level) {
+                    parent.spawn(row);
+                }
+            })),
+        )
+    }
+
+    fn update_by_event(&mut self, item: UpgradeItems) {
+        use UpgradeItems::*;
+        match item {
+            AttackUpgrade => self.attack_upgrade_level += 1,
+            BuySpawner => self.buy_spawner_level += 1,
+        }
+    }
 }

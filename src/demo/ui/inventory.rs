@@ -6,8 +6,9 @@ use crate::{
 };
 
 pub(super) fn plugin(app: &mut App) {
-    app.init_resource::<Inventory>()
-        .register_type::<Inventory>();
+    // app.init_resource::<Inventory>();
+    app.register_type::<Inventory>();
+    app.insert_resource(Inventory { dust_data: 0 });
 
     app.add_systems(
         Update,

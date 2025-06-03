@@ -5,7 +5,8 @@ use crate::prelude::*;
 use crate::{AssetsState, audio::music, screens::Screen};
 
 use super::gameplay::*;
-use super::ui::{inventory::inventory_ui, purchase::purchase_ui};
+use super::ui::inventory::inventory_ui;
+use super::ui::purchase::ShopState;
 
 pub(super) fn plugin(app: &mut App) {
     app.configure_loading_state(
@@ -23,7 +24,11 @@ pub struct LevelAssets {
 }
 
 /// A system that spawns the main level.
-pub fn spawn_level(mut commands: Commands, level_assets: Res<LevelAssets>) {
+pub fn spawn_level(
+    mut commands: Commands,
+    level_assets: Res<LevelAssets>,
+    shop_state: Res<ShopState>,
+) {
     info!("Spawn level");
 
     commands.spawn((
@@ -56,6 +61,6 @@ pub fn spawn_level(mut commands: Commands, level_assets: Res<LevelAssets>) {
         StateScoped(Screen::Gameplay),
         GlobalZIndex(1),
         Pickable::IGNORE,
-        children![inventory_ui(), purchase_ui()],
+        children![inventory_ui(), shop_state.render()],
     ));
 }

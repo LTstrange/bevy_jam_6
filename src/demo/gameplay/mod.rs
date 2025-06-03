@@ -5,6 +5,7 @@ mod damage;
 mod dust;
 mod dust_spawner;
 mod health;
+mod power;
 
 pub use attacker::SpawnAttacker;
 pub use dust_spawner::dust_spawner;
@@ -16,5 +17,6 @@ pub(super) fn plugin(app: &mut App) {
         dust_spawner::plugin,
         damage::plugin,
         health::plugin,
+        power::plugin,
     ));
 }

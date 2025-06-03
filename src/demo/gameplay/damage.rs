@@ -5,7 +5,7 @@ use crate::{
     visual_effect::{AttackLine, TempoEffect},
 };
 
-use super::{dust::Dust, health::Health};
+use super::{dust::Dust, health::Health, power::Power};
 
 pub(super) fn plugin(app: &mut App) {
     app.add_event::<AttackDustEvent>();
@@ -74,11 +74,11 @@ fn deal_damage(
                 let (nearest_dust, _, dust_pos) = dust
                     .iter()
                     .filter(|(_, _, transform)| {
-                        transform
+                        let distance = transform
                             .translation
                             .truncate()
-                            .distance_squared(damage_pos)
-                            < LIGHTING_RANGE * LIGHTING_RANGE // radius squared
+                            .distance_squared(damage_pos);
+                        20.0 < distance && distance < LIGHTING_RANGE * LIGHTING_RANGE // radius squared
                     })
                     .filter(|(e, _, _)| !attacked_dust.contains(e))
                     .fold(
@@ -98,6 +98,10 @@ fn deal_damage(
                     commands.entity(damage_entity).despawn();
                     continue;
                 }
+                info!(
+                    "Damage distance sq: {}",
+                    dust_pos.distance_squared(damage_pos)
+                );
 
                 let (_, mut health, _) = dust.get_mut(nearest_dust)?;
                 // random the amount of damage to apply
@@ -108,6 +112,7 @@ fn deal_damage(
                 commands.send_event(AttackDustEvent {
                     source: damage_transform.translation.truncate(),
                     target: dust_pos,
+                    amount: deal_amount,
                     remaining_energy: *amount - deal_amount,
                     damage_type: *damage_type,
                     resume_entropy: entropy.clone(),
@@ -124,6 +129,7 @@ fn deal_damage(
 struct AttackDustEvent {
     source: Vec2,
     target: Vec2,
+    amount: u32,
     remaining_energy: u32,
     damage_type: DamageType,
     resume_entropy: Entropy<WyRand>,
@@ -132,20 +138,24 @@ struct AttackDustEvent {
 fn deal_attack_event(
     mut commands: Commands,
     mut event_reader: EventReader<AttackDustEvent>,
+    mut power: ResMut<Power>,
 ) -> Result {
     for &AttackDustEvent {
         source,
         target,
+        amount,
         remaining_energy,
         damage_type,
         ref resume_entropy,
     } in event_reader.read()
     {
         commands.spawn(lightning_effect(target, source));
-        if remaining_energy > 0 {
+        commands.spawn(damage_text(amount, target));
+        let amount = power.consume(remaining_energy);
+        if amount > 0 {
             commands.spawn(generate_damage(
                 target,
-                remaining_energy,
+                amount,
                 damage_type,
                 resume_entropy.clone(),
             ));
@@ -166,5 +176,18 @@ fn lightning_effect(target: Vec2, source: Vec2) -> impl Bundle {
             start: source,
             end: target,
         },
+    )
+}
+
+fn damage_text(amount: u32, pos: Vec2) -> impl Bundle {
+    (
+        Name::new("Damage Text"),
+        StateScoped(Screen::Gameplay),
+        Transform::from_translation(pos.extend(0.0)),
+        Text2d::new(format!("-{}", amount)),
+        TempoEffect::new(0.5),
+        TextFont::from_font_size(12.0),
+        TextColor(RED.into()),
+        GlobalZIndex(100),
     )
 }
