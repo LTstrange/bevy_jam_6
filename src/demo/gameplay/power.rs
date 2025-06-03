@@ -1,4 +1,7 @@
-use bevy::color::palettes::css::*;
+use bevy::color::palettes::{
+    css::{BLACK, WHITE},
+    tailwind::*,
+};
 
 use crate::prelude::*;
 
@@ -58,21 +61,29 @@ pub fn power_ui() -> impl Bundle {
         Name::new("Power UI"),
         Node {
             width: Val::Px(200.0),
-            height: Val::Px(40.0),
+            // height: Val::Px(40.0),
+            align_items: AlignItems::Start,
+            justify_content: JustifyContent::Start,
             padding: UiRect::all(Val::Px(3.0)),
             ..default()
         },
         BackgroundColor(WHITE.into()),
         children![(
-            PowerUI,
             Node {
-                // width: Val::Percent(100.0),
-                // height: Val::Percent(100.0),
+                align_items: AlignItems::Start,
+                justify_content: JustifyContent::Start,
+                width: Val::Percent(100.0),
+                overflow: Overflow::visible(),
                 ..default()
             },
-            Text::new("Power: 333 / 999"),
-            TextFont::default(),
-            BackgroundColor(GREEN.into()),
+            BackgroundColor(GREEN_500.into()),
+            children![(
+                PowerUI,
+                Text::new("Power: 333 / 999"),
+                TextLayout::new(JustifyText::Left, LineBreak::NoWrap),
+                TextFont::default(),
+                TextColor(BLACK.into()),
+            )]
         )],
         // Children::spawn(SpawnWith(|parent: &mut RelatedSpawner<_>| {
         //     parent.spawn(Sprite::from_color(WHITE, Vec2::new(50.0, 20.0)));
@@ -80,8 +91,15 @@ pub fn power_ui() -> impl Bundle {
     )
 }
 
-fn update_power_ui(ui: Single<(&mut Text, &mut Node), With<PowerUI>>, power: Res<Power>) {
-    let (mut text, mut node) = ui.into_inner();
+fn update_power_ui(
+    mut bar: Query<&mut Node>,
+    text: Single<(&mut Text, &ChildOf), With<PowerUI>>,
+    power: Res<Power>,
+) {
+    // info!("Update power UI: {}/{}", power.current(), power.max);
+    let (mut text, parent) = text.into_inner();
+    let mut bar = bar.get_mut(parent.0).expect("Power UI bar not found");
+
     text.0 = format!("Power: {}/{}", power.current(), power.max);
-    // node.width = Val::Percent(power.current() as f32 / power.max as f32);
+    bar.width = Val::Percent((power.current() as f32 / power.max as f32) * 100.0);
 }
