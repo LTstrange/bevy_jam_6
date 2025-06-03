@@ -97,6 +97,7 @@ fn attack_dust(
                 amount,
                 DamageType::Lightning,
                 entropy.fork_rng(),
+                None,
             ));
             commands.spawn(sound_effect(
                 attacker_assets.steps.choose(&mut entropy).unwrap().clone(),

@@ -19,6 +19,7 @@ pub(super) fn plugin(app: &mut App) {
 #[reflect(Component)]
 struct Damage {
     amount: u32,
+    previous: Option<Entity>,
 }
 
 #[derive(Component, Reflect, Debug, Clone, Copy)]
@@ -34,11 +35,12 @@ pub fn generate_damage(
     amount: u32,
     damage_type: DamageType,
     entropy: Entropy<WyRand>,
+    previous: Option<Entity>,
 ) -> impl Bundle {
     (
         Name::new("Lightning Damage"),
         Transform::from_translation(pos.extend(0.0)),
-        Damage { amount },
+        Damage { amount, previous },
         entropy,
         damage_type,
     )
@@ -62,7 +64,12 @@ fn deal_damage(
 ) -> Result {
     // TODO: allow attack same dust by multiple damage entities
     let mut attacked_dust = vec![];
-    for (damage_entity, Damage { amount }, damage_type, damage_transform, mut entropy) in damages {
+    for (damage_entity, Damage { amount, previous }, damage_type, damage_transform, mut entropy) in
+        damages
+    {
+        if let Some(previous) = previous {
+            attacked_dust.push(*previous);
+        }
         match damage_type {
             DamageType::Lightning => {
                 // search for dust entities within a certain radius
@@ -78,7 +85,7 @@ fn deal_damage(
                             .translation
                             .truncate()
                             .distance_squared(damage_pos);
-                        20.0 < distance && distance < LIGHTING_RANGE * LIGHTING_RANGE // radius squared
+                        distance < LIGHTING_RANGE * LIGHTING_RANGE // radius squared
                     })
                     .filter(|(e, _, _)| !attacked_dust.contains(e))
                     .fold(
@@ -108,6 +115,7 @@ fn deal_damage(
                 commands.send_event(AttackDustEvent {
                     source: damage_transform.translation.truncate(),
                     target: dust_pos,
+                    previous: nearest_dust,
                     amount: deal_amount,
                     remaining_energy: *amount - deal_amount,
                     damage_type: *damage_type,
@@ -125,6 +133,7 @@ fn deal_damage(
 struct AttackDustEvent {
     source: Vec2,
     target: Vec2,
+    previous: Entity,
     amount: u32,
     remaining_energy: u32,
     damage_type: DamageType,
@@ -138,6 +147,7 @@ fn deal_attack_event(
     for &AttackDustEvent {
         source,
         target,
+        previous,
         amount,
         remaining_energy,
         damage_type,
@@ -152,6 +162,7 @@ fn deal_attack_event(
                 remaining_energy,
                 damage_type,
                 entropy.clone(),
+                Some(previous),
             ));
         }
     }
