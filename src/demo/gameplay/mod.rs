@@ -9,6 +9,7 @@ mod power;
 
 pub use attacker::SpawnAttacker;
 pub use dust_spawner::dust_spawner;
+pub use power::power_ui;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins((

@@ -54,6 +54,7 @@ pub fn spawn_level(
             width: Val::Percent(100.0),
             height: Val::Percent(100.0),
             flex_direction: FlexDirection::Row,
+            align_items: AlignItems::Start,
             justify_content: JustifyContent::SpaceBetween,
             padding: UiRect::all(Val::Px(10.0)),
             ..default()
@@ -61,6 +62,6 @@ pub fn spawn_level(
         StateScoped(Screen::Gameplay),
         GlobalZIndex(1),
         Pickable::IGNORE,
-        children![inventory_ui(), shop_state.render()],
+        children![inventory_ui(), power_ui(), shop_state.render()],
     ));
 }

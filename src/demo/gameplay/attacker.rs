@@ -3,7 +3,10 @@ use rand::seq::IndexedRandom;
 
 use crate::{audio::sound_effect, demo::PlayerStats, prelude::*};
 
-use super::damage::{DamageType, generate_damage};
+use super::{
+    damage::{DamageType, generate_damage},
+    power::Power,
+};
 
 pub(super) fn plugin(app: &mut App) {
     app.configure_loading_state(
@@ -81,12 +84,17 @@ fn attack_dust(
     attacker: Query<(&mut Attacker, &mut Entropy<WyRand>, &Transform)>,
     player_stats: Res<PlayerStats>,
     attacker_assets: Res<AttackerAssets>,
+    mut power: ResMut<Power>,
 ) {
     for (mut attacker, mut entropy, transform) in attacker {
         if attacker.timer.just_finished() {
+            let amount = power.consume(player_stats.attack_energy);
+            if amount == 0 {
+                continue; // No energy to attack
+            }
             commands.spawn(generate_damage(
                 transform.translation.truncate(),
-                player_stats.attack_energy,
+                amount,
                 DamageType::Lightning,
                 entropy.fork_rng(),
             ));

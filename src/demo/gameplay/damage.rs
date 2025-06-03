@@ -5,7 +5,7 @@ use crate::{
     visual_effect::{AttackLine, TempoEffect},
 };
 
-use super::{dust::Dust, health::Health, power::Power};
+use super::{dust::Dust, health::Health};
 
 pub(super) fn plugin(app: &mut App) {
     app.add_event::<AttackDustEvent>();
@@ -98,10 +98,6 @@ fn deal_damage(
                     commands.entity(damage_entity).despawn();
                     continue;
                 }
-                info!(
-                    "Damage distance sq: {}",
-                    dust_pos.distance_squared(damage_pos)
-                );
 
                 let (_, mut health, _) = dust.get_mut(nearest_dust)?;
                 // random the amount of damage to apply
@@ -115,7 +111,7 @@ fn deal_damage(
                     amount: deal_amount,
                     remaining_energy: *amount - deal_amount,
                     damage_type: *damage_type,
-                    resume_entropy: entropy.clone(),
+                    entropy: entropy.clone(),
                 });
             }
         }
@@ -132,13 +128,12 @@ struct AttackDustEvent {
     amount: u32,
     remaining_energy: u32,
     damage_type: DamageType,
-    resume_entropy: Entropy<WyRand>,
+    entropy: Entropy<WyRand>,
 }
 
 fn deal_attack_event(
     mut commands: Commands,
     mut event_reader: EventReader<AttackDustEvent>,
-    mut power: ResMut<Power>,
 ) -> Result {
     for &AttackDustEvent {
         source,
@@ -146,18 +141,17 @@ fn deal_attack_event(
         amount,
         remaining_energy,
         damage_type,
-        ref resume_entropy,
+        ref entropy,
     } in event_reader.read()
     {
         commands.spawn(lightning_effect(target, source));
         commands.spawn(damage_text(amount, target));
-        let amount = power.consume(remaining_energy);
-        if amount > 0 {
+        if remaining_energy > 0 {
             commands.spawn(generate_damage(
                 target,
-                amount,
+                remaining_energy,
                 damage_type,
-                resume_entropy.clone(),
+                entropy.clone(),
             ));
         }
     }
