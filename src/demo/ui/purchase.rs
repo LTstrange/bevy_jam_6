@@ -84,7 +84,7 @@ impl Upgrades for AttackUpgrades {
 
 const BUY_SPAWNERS: BuySpawners = BuySpawners {
     item_name: "Buy Spawner",
-    levels: &[50],
+    levels: &[50, 50, 50, 50],
 };
 struct BuySpawners {
     item_name: &'static str,

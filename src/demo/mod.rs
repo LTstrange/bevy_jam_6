@@ -13,7 +13,7 @@ pub(super) fn plugin(app: &mut App) {
     app.add_plugins((level::plugin, ui::plugin, gameplay::plugin));
 
     app.insert_resource(PlayerStats {
-        attack_energy: 2, // Initial attack energy
+        attack_energy: 5, // Initial attack energy
     });
 
     app.add_observer(
