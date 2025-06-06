@@ -59,7 +59,7 @@ fn update_purchase_ui(
 const ATTACK_UPGRADES: AttackUpgrades = AttackUpgrades {
     item_name: "Upgrade Attack",
     effects: MultiplicativeEffect::new(5.5, 1.1),
-    costs: ExpCosts::new(10.0, 1.5),
+    costs: ExpCosts::new(10.0, 1.2),
 };
 
 struct AttackUpgrades {
@@ -86,8 +86,9 @@ impl Upgrades for AttackUpgrades {
 
 const BUY_SPAWNERS: BuySpawners = BuySpawners {
     item_name: "Buy Spawner",
-    costs: ExpCosts::new(50.0, 1.5),
+    costs: ExpCosts::new(50.0, 1.2),
 };
+
 struct BuySpawners {
     item_name: &'static str,
     costs: ExpCosts,

@@ -1,7 +1,14 @@
 use bevy::color::palettes::css::*;
 use rand::seq::IndexedRandom;
 
-use crate::{audio::sound_effect, demo::PlayerStats, prelude::*};
+use crate::{
+    audio::sound_effect,
+    demo::{
+        PlayerStats,
+        gameplay::{damage::LIGHTING_RANGE, dust::Dust},
+    },
+    prelude::*,
+};
 
 use super::{
     damage::{DamageType, generate_damage},
@@ -85,14 +92,29 @@ fn attack_dust(
     player_stats: Res<PlayerStats>,
     attacker_assets: Res<AttackerAssets>,
     power: Res<Power>,
+    dust: Query<&Transform, With<Dust>>,
 ) {
-    for (mut attacker, mut entropy, transform) in attacker {
-        if attacker.timer.just_finished() {
-            if power.current() < player_stats.attack_energy {
+    let mut current_energy = power.current();
+    for (mut attacker, mut entropy, attacker_trans) in attacker {
+        if attacker.timer.finished() {
+            if current_energy < player_stats.attack_energy {
                 continue; // No energy to attack
             }
+            current_energy -= player_stats.attack_energy;
+
+            let has_dust = dust.iter().any(|dust_trans| {
+                let distance = dust_trans
+                    .translation
+                    .truncate()
+                    .distance_squared(attacker_trans.translation.truncate());
+                distance < LIGHTING_RANGE * LIGHTING_RANGE
+            });
+            if !has_dust {
+                continue; // No dust in range to attack
+            }
+
             commands.spawn(generate_damage(
-                transform.translation.truncate(),
+                attacker_trans.translation.truncate(),
                 player_stats.attack_energy,
                 DamageType::Lightning,
                 entropy.fork_rng(),
@@ -101,6 +123,7 @@ fn attack_dust(
             commands.spawn(sound_effect(
                 attacker_assets.steps.choose(&mut entropy).unwrap().clone(),
             ));
+
             // Reset the attack timer
             attacker.timer.reset();
         }

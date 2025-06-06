@@ -29,7 +29,7 @@ pub enum DamageType {
     Lightning,
 }
 
-const LIGHTING_RANGE: f32 = 100.0;
+pub const LIGHTING_RANGE: f32 = 100.0;
 
 pub fn generate_damage(
     pos: Vec2,
