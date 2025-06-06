@@ -100,7 +100,7 @@ fn update_health_bar(
 ) -> Result {
     for (mut sprite, HealthBar(size, parent)) in health_bar {
         let Health { current, max } = parents.get(*parent)?;
-        let ratio = *current as f32 / *max as f32;
+        let ratio = current / max;
         sprite.custom_size = Some(Vec2::new((size.x - 2.0) * ratio, size.y - 2.0));
     }
     Ok(())
