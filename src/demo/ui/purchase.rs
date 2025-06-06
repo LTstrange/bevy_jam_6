@@ -213,9 +213,22 @@ define_upgrade!(
     SetDustSpawnStats::SpawnSpeed
 );
 
+define_upgrade!(
+    has_effects:
+    UPGRADE_POWER_MAX,
+    "Upgrade Power Max",
+    AdditiveEffect,
+    AdditiveEffect::new(24.0, 1.2),
+    ExpCosts,
+    ExpCosts::new(40.0, 1.3),
+    SetPowerStats,
+    SetPowerStats::PowerMax
+);
+
 shop_state!(
     AttackUpgrade -> ATTACK_UPGRADES
     BuySpawner -> BUY_SPAWNERS
     EnhancePowerRegen -> ENHANCE_POWER_REGEN
     SpeedUpDustGen -> SPEED_UP_DUST_GEN
+    UpgradePowerMax -> UPGRADE_POWER_MAX
 );
