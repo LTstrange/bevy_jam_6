@@ -1,3 +1,5 @@
+use bevy::winit::cursor::{CursorIcon, CustomCursor, CustomCursorImage};
+
 use crate::prelude::*;
 
 pub(super) fn plugin(app: &mut App) {
@@ -9,13 +11,24 @@ pub(super) fn plugin(app: &mut App) {
     );
 }
 
-fn setup(mut commands: Commands) {
+fn setup(
+    mut commands: Commands,
+    window: Single<Entity, With<Window>>,
+    asset_server: Res<AssetServer>,
+) {
     // mouse tracker
     commands.spawn((
         Name::new("Mouse Tracker"),
         MouseTracker,
         Transform::default(),
     ));
+    commands
+        .entity(*window)
+        .insert(CursorIcon::Custom(CustomCursor::Image(CustomCursorImage {
+            handle: asset_server.load("ui/hand_point.png"),
+            hotspot: (8, 6),
+            ..Default::default()
+        })));
 
     commands.spawn((Name::new("Camera"), Camera2d, MainCamera));
 }
