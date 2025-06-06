@@ -48,7 +48,7 @@ struct Attacker {
     timer: Timer,
 }
 
-#[derive(Event, Debug)]
+#[derive(Event, Debug, Clone)]
 pub struct SpawnAttacker;
 
 #[derive(Resource, Reflect, Debug, Default, AssetCollection)]

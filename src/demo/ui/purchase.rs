@@ -1,10 +1,10 @@
 use bevy::ecs::relationship::RelatedSpawner;
 use bevy::ecs::spawn::SpawnWith;
 
-use super::inventory;
 use super::widget;
 
 use crate::demo::ChangePlayerStats;
+use crate::demo::gameplay::SetPowerStats;
 use crate::demo::gameplay::SpawnAttacker;
 use crate::prelude::*;
 
@@ -14,28 +14,6 @@ use types::*;
 pub(super) fn plugin(app: &mut App) {
     app.init_resource::<ShopState>();
     app.add_observer(update_purchase_ui);
-}
-
-macro_rules! row {
-    ($item:expr, $price:expr, $event:expr, $upgrade_item:expr) => {
-        widget::row(
-            $item,
-            $price,
-            move |_t: Trigger<Pointer<Click>>,
-                  mut inventory: ResMut<inventory::Inventory>,
-                  mut commands: Commands,
-                  mut shop_state: ResMut<ShopState>| {
-                if inventory.dust_data >= $price {
-                    inventory.dust_data -= $price;
-                    shop_state.update_by_event($upgrade_item);
-                    commands.trigger($event);
-                    commands.trigger(PurchaseUIChanged);
-                } else {
-                    info!("Not enough data to purchase.");
-                }
-            },
-        )
-    };
 }
 
 #[derive(Component, Reflect, Debug)]
@@ -56,68 +34,126 @@ fn update_purchase_ui(
     commands.entity(parent.0).with_child(shop_state.render());
 }
 
-const ATTACK_UPGRADES: AttackUpgrades = AttackUpgrades {
-    item_name: "Upgrade Attack",
-    effects: MultiplicativeEffect::new(5.5, 1.1),
-    costs: ExpCosts::new(10.0, 1.2),
-};
-
-struct AttackUpgrades {
-    item_name: &'static str,
-    effects: MultiplicativeEffect,
-    costs: ExpCosts,
-}
-
-impl Upgrades for AttackUpgrades {
-    fn row(&self, level: usize) -> Option<impl Bundle> {
-        let mut combine_iter = self.effects.clone().zip(self.costs.clone());
-        if let Some((effect, price)) = combine_iter.nth(level) {
-            Some(row!(
-                self.item_name,
-                price,
-                ChangePlayerStats::SetAttackEnergy(effect),
-                UpgradeItems::AttackUpgrade
-            ))
-        } else {
-            None
+macro_rules! define_upgrade {
+    (
+        $struct_name:ident,      // 结构体名
+        $const_name:ident,       // 常量名
+        $item_name:expr,         // item_name 字段值
+        $cost_type:ty,           // costs 类型
+        $cost_value:expr,        // costs 初始化值
+        $effect_output:ty,       // impl 中的 Effect 类型
+        $effect_fn:expr          // get_current_upgrade 返回的 effect 表达式
+    ) => {
+        struct $struct_name {
+            item_name: &'static str,
+            costs: $cost_type,
         }
-    }
+
+        const $const_name: $struct_name = $struct_name {
+            item_name: $item_name,
+            costs: $cost_value,
+        };
+
+        impl Upgrades for $struct_name {
+            type Effect = $effect_output;
+
+            fn name(&self) -> &str {
+                self.item_name
+            }
+
+            fn get_current_upgrade(&self, level: usize) -> Option<(Self::Effect, u32)> {
+                let mut combine_iter = self.costs.clone();
+                let cost = combine_iter.nth(level)?;
+                Some(($effect_fn(), cost))
+            }
+        }
+    };
+    (
+        $struct_name:ident,      // 结构体名
+        $const_name:ident,       // 常量名
+        $item_name:expr,         // item_name 字段值
+        $effect_type:ty,         // effects 类型
+        $effect_value:expr,      // effects 初始化值
+        $cost_type:ty,           // costs 类型
+        $cost_value:expr,        // costs 初始化值
+        $effect_output:ty,       // impl 中的 Effect 类型
+        $effect_fn:expr          // get_current_upgrade 返回的 effect 表达式
+    ) => {
+        struct $struct_name {
+            item_name: &'static str,
+            effects: $effect_type,
+            costs: $cost_type,
+        }
+
+        const $const_name: $struct_name = $struct_name {
+            item_name: $item_name,
+            effects: $effect_value,
+            costs: $cost_value,
+        };
+
+        impl Upgrades for $struct_name {
+            type Effect = $effect_output;
+
+            fn name(&self) -> &str {
+                self.item_name
+            }
+
+            fn get_current_upgrade(&self, level: usize) -> Option<(Self::Effect, u32)> {
+                let mut combine_iter = self.effects.clone().zip(self.costs.clone());
+                let (effect, cost) = combine_iter.nth(level)?;
+                Some(($effect_fn(effect), cost))
+            }
+        }
+    };
 }
 
-const BUY_SPAWNERS: BuySpawners = BuySpawners {
-    item_name: "Buy Spawner",
-    costs: ExpCosts::new(50.0, 1.2),
-};
+define_upgrade!(
+    AttackUpgrades,
+    ATTACK_UPGRADES,
+    "Upgrade Attack",
+    MultiplicativeEffect,
+    MultiplicativeEffect::new(5.5, 1.1),
+    ExpCosts,
+    ExpCosts::new(10.0, 1.2),
+    ChangePlayerStats,
+    ChangePlayerStats::SetAttackEnergy
+);
 
-struct BuySpawners {
-    item_name: &'static str,
-    costs: ExpCosts,
-}
+define_upgrade!(
+    BuySpawners,
+    BUY_SPAWNERS,
+    "Buy Spawner",
+    ExpCosts,
+    ExpCosts::new(50.0, 1.2),
+    SpawnAttacker,
+    || SpawnAttacker // 因为没有 effect 参数
+);
 
-impl Upgrades for BuySpawners {
-    fn row(&self, level: usize) -> Option<impl Bundle> {
-        let mut costs_iter = self.costs.clone();
-        costs_iter.nth(level).map(|price| {
-            row!(
-                self.item_name,
-                price,
-                SpawnAttacker,
-                UpgradeItems::BuySpawner
-            )
-        })
-    }
-}
+define_upgrade!(
+    EnhancePowerRegen,
+    ENHANCE_POWER_REGEN,
+    "Increase Power Regen",
+    AdditiveEffect,
+    AdditiveEffect::new(6.0, 1.2),
+    ExpCosts,
+    ExpCosts::new(20.0, 1.3),
+    SetPowerStats,
+    SetPowerStats::RegenSpeed
+);
 
 #[derive(Resource, Reflect, Debug, Default, Clone)]
 #[reflect(Resource)]
 pub struct ShopState {
     attack_upgrade_level: usize,
     buy_spawner_level: usize,
+    enhance_power_regen_level: usize,
 }
 
+#[derive(Clone, Copy)]
 enum UpgradeItems {
     AttackUpgrade,
     BuySpawner,
+    EnhancePowerRegen,
 }
 
 impl ShopState {
@@ -132,10 +168,20 @@ impl ShopState {
             },
             Children::spawn(SpawnWith(move |parent: &mut RelatedSpawner<_>| {
                 parent.spawn(widget::header("Research Lab"));
-                if let Some(row) = ATTACK_UPGRADES.row(levels.attack_upgrade_level) {
+                if let Some(row) =
+                    ATTACK_UPGRADES.row(levels.attack_upgrade_level, UpgradeItems::AttackUpgrade)
+                {
                     parent.spawn(row);
                 }
-                if let Some(row) = BUY_SPAWNERS.row(levels.buy_spawner_level) {
+                if let Some(row) =
+                    BUY_SPAWNERS.row(levels.buy_spawner_level, UpgradeItems::BuySpawner)
+                {
+                    parent.spawn(row);
+                }
+                if let Some(row) = ENHANCE_POWER_REGEN.row(
+                    levels.enhance_power_regen_level,
+                    UpgradeItems::EnhancePowerRegen,
+                ) {
                     parent.spawn(row);
                 }
             })),
@@ -147,6 +193,7 @@ impl ShopState {
         match item {
             AttackUpgrade => self.attack_upgrade_level += 1,
             BuySpawner => self.buy_spawner_level += 1,
+            EnhancePowerRegen => self.enhance_power_regen_level += 1,
         }
     }
 }

@@ -35,7 +35,7 @@ struct PlayerStats {
     pub attack_energy: f32,
 }
 
-#[derive(Event, Debug)]
+#[derive(Event, Debug, Clone)]
 pub enum ChangePlayerStats {
     SetAttackEnergy(f32),
 }

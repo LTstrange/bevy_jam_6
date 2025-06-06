@@ -1,7 +1,39 @@
-use crate::prelude::*;
+use crate::{
+    demo::ui::{
+        inventory,
+        purchase::{PurchaseUIChanged, ShopState, UpgradeItems},
+        widget,
+    },
+    prelude::*,
+};
 
 pub trait Upgrades {
-    fn row(&self, level: usize) -> Option<impl Bundle>;
+    type Effect: Event + Clone;
+    fn name(&self) -> &str;
+    fn get_current_upgrade(&self, level: usize) -> Option<(Self::Effect, u32)>;
+    fn row(&self, level: usize, item: UpgradeItems) -> Option<impl Bundle> {
+        if let Some((effect, cost)) = self.get_current_upgrade(level) {
+            Some(widget::row(
+                self.name(),
+                cost,
+                move |_t: Trigger<Pointer<Click>>,
+                      mut inventory: ResMut<inventory::Inventory>,
+                      mut commands: Commands,
+                      mut shop_state: ResMut<ShopState>| {
+                    if inventory.dust_data >= cost {
+                        inventory.dust_data -= cost;
+                        shop_state.update_by_event(item);
+                        commands.trigger(effect.clone());
+                        commands.trigger(PurchaseUIChanged);
+                    } else {
+                        info!("Not enough data to purchase.");
+                    }
+                },
+            ))
+        } else {
+            None
+        }
+    }
 }
 
 /// factor * base^k
@@ -53,18 +85,18 @@ impl AdditiveEffect {
 }
 
 impl Iterator for AdditiveEffect {
-    type Item = u32;
+    type Item = f32;
 
     fn next(&mut self) -> Option<Self::Item> {
         let value = self.initial_value + self.increment * (self.k as f32);
         self.k += 1;
-        Some(value as u32)
+        Some(value)
     }
 
     fn nth(&mut self, n: usize) -> Option<Self::Item> {
         let value = self.initial_value + self.increment * (self.k + n) as f32;
         self.k += n;
-        Some(value as u32)
+        Some(value)
     }
 }
 
