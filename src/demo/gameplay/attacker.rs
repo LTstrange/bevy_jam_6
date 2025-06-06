@@ -84,17 +84,16 @@ fn attack_dust(
     attacker: Query<(&mut Attacker, &mut Entropy<WyRand>, &Transform)>,
     player_stats: Res<PlayerStats>,
     attacker_assets: Res<AttackerAssets>,
-    mut power: ResMut<Power>,
+    power: Res<Power>,
 ) {
     for (mut attacker, mut entropy, transform) in attacker {
         if attacker.timer.just_finished() {
-            let amount = power.consume(player_stats.attack_energy);
-            if amount == 0 {
+            if power.current() < player_stats.attack_energy {
                 continue; // No energy to attack
             }
             commands.spawn(generate_damage(
                 transform.translation.truncate(),
-                amount,
+                player_stats.attack_energy,
                 DamageType::Lightning,
                 entropy.fork_rng(),
                 None,

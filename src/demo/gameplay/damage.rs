@@ -1,6 +1,7 @@
 use bevy::color::palettes::css::*;
 
 use crate::{
+    demo::gameplay::power::Power,
     prelude::*,
     visual_effect::{AttackLine, TempoEffect},
 };
@@ -61,6 +62,7 @@ fn deal_damage(
         &mut Entropy<WyRand>,
     )>,
     mut dust: Query<(Entity, &mut Health, &Transform), With<Dust>>,
+    mut power: ResMut<Power>,
 ) -> Result {
     // TODO: allow attack same dust by multiple damage entities
     let mut attacked_dust = vec![];
@@ -110,6 +112,7 @@ fn deal_damage(
                 // random the amount of damage to apply
                 let deal_amount = entropy.random_range((amount.div_ceil(2))..=*amount);
                 health.apply_damage(deal_amount);
+                power.consume(deal_amount);
 
                 attacked_dust.push(nearest_dust);
                 commands.send_event(AttackDustEvent {
