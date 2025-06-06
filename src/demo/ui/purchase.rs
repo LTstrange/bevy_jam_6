@@ -193,10 +193,10 @@ define_upgrade!(
     has_effects:
     ENHANCE_POWER_REGEN,
     "Increase Power Regen",
-    AdditiveEffect,
-    AdditiveEffect::new(6.0, 1.2),
+    MultiplicativeEffect,
+    MultiplicativeEffect::new(7.5, 1.5),
     ExpCosts,
-    ExpCosts::new(20.0, 1.3),
+    ExpCosts::new(20.0, 1.6),
     SetPowerStats,
     SetPowerStats::RegenSpeed
 );
@@ -206,7 +206,7 @@ define_upgrade!(
     SPEED_UP_DUST_GEN,
     "Speed Up Dust Generation",
     AdditiveEffect,
-    AdditiveEffect::new(0.5, 1.2),
+    AdditiveEffect::new(3.0, 1.2),
     ExpCosts,
     ExpCosts::new(30.0, 1.3),
     SetDustSpawnStats,
