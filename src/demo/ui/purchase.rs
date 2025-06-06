@@ -60,7 +60,7 @@ macro_rules! define_upgrade {
         impl Upgrades for $const_name {
             type Effect = $effect_output;
 
-            fn name(&self) -> &str {
+            fn name(&self) -> &'static str {
                 self.item_name
             }
 
@@ -99,7 +99,7 @@ macro_rules! define_upgrade {
         impl Upgrades for $const_name {
             type Effect = $effect_output;
 
-            fn name(&self) -> &str {
+            fn name(&self) -> &'static str {
                 self.item_name
             }
 
@@ -219,64 +219,3 @@ shop_state!(
     EnhancePowerRegen -> ENHANCE_POWER_REGEN
     SpeedUpDustGen -> SPEED_UP_DUST_GEN
 );
-
-// #[derive(Resource, Reflect, Debug, Default, Clone)]
-// #[reflect(Resource)]
-// pub struct ShopState {
-//     attack_upgrade_level: usize,
-//     buy_spawner_level: usize,
-//     enhance_power_regen_level: usize,
-//     speed_up_dust_gen_level: usize,
-// }
-
-// #[derive(Clone, Copy)]
-// enum UpgradeItems {
-//     AttackUpgrade,
-//     BuySpawner,
-//     EnhancePowerRegen,
-//     SpeedUpDustGen,
-// }
-
-// impl ShopState {
-//     pub fn render(&self) -> impl Bundle {
-//         use UpgradeItems::*;
-//         let levels = self.clone();
-//         (
-//             Name::new("Purchase UI"),
-//             PurchaseUI,
-//             Node {
-//                 flex_direction: FlexDirection::Column,
-//                 ..default()
-//             },
-//             Children::spawn(SpawnWith(move |parent: &mut RelatedSpawner<_>| {
-//                 parent.spawn(widget::header("Research Lab"));
-//                 if let Some(row) = ATTACK_UPGRADES.row(levels.attack_upgrade_level, AttackUpgrade) {
-//                     parent.spawn(row);
-//                 }
-//                 if let Some(row) = BUY_SPAWNERS.row(levels.buy_spawner_level, BuySpawner) {
-//                     parent.spawn(row);
-//                 }
-//                 if let Some(row) =
-//                     ENHANCE_POWER_REGEN.row(levels.enhance_power_regen_level, EnhancePowerRegen)
-//                 {
-//                     parent.spawn(row);
-//                 }
-//                 if let Some(row) =
-//                     SPEED_UP_DUST_GEN.row(levels.speed_up_dust_gen_level, SpeedUpDustGen)
-//                 {
-//                     parent.spawn(row);
-//                 }
-//             })),
-//         )
-//     }
-
-//     fn update_by_event(&mut self, item: UpgradeItems) {
-//         use UpgradeItems::*;
-//         match item {
-//             AttackUpgrade => self.attack_upgrade_level += 1,
-//             BuySpawner => self.buy_spawner_level += 1,
-//             EnhancePowerRegen => self.enhance_power_regen_level += 1,
-//             SpeedUpDustGen => self.speed_up_dust_gen_level += 1,
-//         }
-//     }
-// }

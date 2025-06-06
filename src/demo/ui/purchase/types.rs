@@ -9,7 +9,7 @@ use crate::{
 
 pub trait Upgrades {
     type Effect: Event + Clone;
-    fn name(&self) -> &str;
+    fn name(&self) -> &'static str;
     fn get_current_upgrade(&self, level: usize) -> Option<(Self::Effect, u32)>;
     fn row(&self, level: usize, item: UpgradeItems) -> Option<impl Bundle> {
         if let Some((effect, cost)) = self.get_current_upgrade(level) {
