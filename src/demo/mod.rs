@@ -20,7 +20,6 @@ pub(super) fn plugin(app: &mut App) {
         |t: Trigger<ChangePlayerStats>, mut player_stats: ResMut<PlayerStats>| match t.event() {
             ChangePlayerStats::SetAttackEnergy(amount) => {
                 player_stats.attack_energy = *amount;
-                info!("Set attack energy: {}", amount);
             } // ChangePlayerStats::SetDraggableAttacker(value) => {
               //     player_stats.draggable_attacker = *value;
               //     info!("Set draggable attacker: {}", value);

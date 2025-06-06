@@ -8,7 +8,7 @@ mod health;
 mod power;
 
 pub use attacker::SpawnAttacker;
-pub use dust_spawner::dust_spawner;
+pub use dust_spawner::{SetDustSpawnStats, dust_spawner};
 pub use power::{SetPowerStats, power_ui};
 
 pub(super) fn plugin(app: &mut App) {
