@@ -6,11 +6,30 @@ use bevy::color::palettes::{
 use crate::prelude::*;
 
 pub(super) fn plugin(app: &mut App) {
-    app.insert_resource(Power::new(20.0, 1.0 / 5.0));
+    app.insert_resource(Power::new(20.0, 5.0));
 
     app.add_systems(Update, update_power_ui.run_if(in_state(Screen::Gameplay)));
 
     app.add_systems(Update, regenerate_power.in_set(AppSystems::Update));
+
+    app.add_observer(update_power_stats);
+}
+
+#[derive(Event, Debug, Clone)]
+pub enum SetPowerStats {
+    RegenSpeed(f32), // Set the amount of power regenerated per second
+    PowerMax(f32),   // Set the maximum power
+}
+
+fn update_power_stats(event: Trigger<SetPowerStats>, mut power: ResMut<Power>) {
+    match event.event() {
+        SetPowerStats::RegenSpeed(speed) => {
+            power.regen_speed = *speed;
+        }
+        SetPowerStats::PowerMax(max) => {
+            power.max = *max;
+        }
+    }
 }
 
 #[derive(Resource, Reflect, Debug, Default)]
@@ -18,7 +37,7 @@ pub(super) fn plugin(app: &mut App) {
 pub struct Power {
     current: f32,
     max: f32,
-    timer: Timer,
+    regen_speed: f32,
 }
 
 #[derive(Component, Reflect, Debug)]
@@ -26,11 +45,11 @@ pub struct Power {
 struct PowerUI;
 
 impl Power {
-    fn new(max: f32, regen_interval: f32) -> Self {
+    fn new(max: f32, regen_speed: f32) -> Self {
         Self {
             current: max,
             max,
-            timer: Timer::from_seconds(regen_interval, TimerMode::Repeating),
+            regen_speed,
         }
     }
 
@@ -44,16 +63,14 @@ impl Power {
         output
     }
 
-    fn regenerate(&mut self, amount: f32) {
-        self.current = (self.current + amount).min(self.max);
+    fn regenerate(&mut self, delta: f32) {
+        self.current = (self.current + self.regen_speed * delta).min(self.max);
     }
 }
 
 fn regenerate_power(mut power: ResMut<Power>, time: Res<Time>) {
     // Example regeneration logic: regenerate 1 power every 1 seconds
-    if power.timer.tick(time.delta()).just_finished() {
-        power.regenerate(1.0);
-    }
+    power.regenerate(time.delta().as_secs_f32());
 }
 
 pub fn power_ui() -> impl Bundle {
