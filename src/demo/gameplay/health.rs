@@ -12,27 +12,27 @@ pub(super) fn plugin(app: &mut App) {
 #[derive(Component, Reflect, Debug)]
 #[reflect(Component)]
 pub struct Health {
-    current: u32,
-    max: u32,
+    current: f32,
+    max: f32,
 }
 
 #[allow(dead_code)]
 impl Health {
-    pub fn new(max: u32) -> Self {
+    pub fn new(max: f32) -> Self {
         Self { current: max, max }
     }
-    pub fn apply_damage(&mut self, damage: u32) {
+    pub fn apply_damage(&mut self, damage: f32) {
         self.current -= damage.min(self.current);
     }
     pub fn is_alive(&self) -> bool {
-        self.current > 0
+        self.current > 0.0
     }
 
     pub fn is_max_health(&self) -> bool {
         self.current >= self.max
     }
 
-    pub fn heal(&mut self, amount: u32) {
+    pub fn heal(&mut self, amount: f32) {
         self.current = (self.current + amount).min(self.max);
     }
 }
@@ -46,7 +46,7 @@ struct HealthBar(Vec2, Entity);
 #[require(Transform)]
 struct HealthBarCompose;
 
-pub fn health_bar_ui(health: u32, offset: Vec2, size: Vec2) -> impl Bundle {
+pub fn health_bar_ui(health: f32, offset: Vec2, size: Vec2) -> impl Bundle {
     (
         Health::new(health),
         Children::spawn(SpawnWith(move |parent: &mut RelatedSpawner<_>| {

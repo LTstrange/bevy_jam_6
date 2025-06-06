@@ -19,7 +19,7 @@ pub(super) fn plugin(app: &mut App) {
 #[derive(Component, Reflect, Debug)]
 #[reflect(Component)]
 struct Damage {
-    amount: u32,
+    amount: f32,
     previous: Option<Entity>,
 }
 
@@ -33,7 +33,7 @@ const LIGHTING_RANGE: f32 = 100.0;
 
 pub fn generate_damage(
     pos: Vec2,
-    amount: u32,
+    amount: f32,
     damage_type: DamageType,
     entropy: Entropy<WyRand>,
     previous: Option<Entity>,
@@ -110,7 +110,7 @@ fn deal_damage(
 
                 let (_, mut health, _) = dust.get_mut(nearest_dust)?;
                 // random the amount of damage to apply
-                let deal_amount = entropy.random_range((amount.div_ceil(2))..=*amount);
+                let deal_amount = entropy.random_range((amount / 2.0)..=*amount);
                 health.apply_damage(deal_amount);
                 power.consume(deal_amount);
 
@@ -137,8 +137,8 @@ struct AttackDustEvent {
     source: Vec2,
     target: Vec2,
     previous: Entity,
-    amount: u32,
-    remaining_energy: u32,
+    amount: f32,
+    remaining_energy: f32,
     damage_type: DamageType,
     entropy: Entropy<WyRand>,
 }
@@ -159,7 +159,7 @@ fn deal_attack_event(
     {
         commands.spawn(lightning_effect(target, source));
         commands.spawn(damage_text(amount, target));
-        if remaining_energy > 0 {
+        if remaining_energy >= 1.0 {
             commands.spawn(generate_damage(
                 target,
                 remaining_energy,
@@ -187,12 +187,12 @@ fn lightning_effect(target: Vec2, source: Vec2) -> impl Bundle {
     )
 }
 
-fn damage_text(amount: u32, pos: Vec2) -> impl Bundle {
+fn damage_text(amount: f32, pos: Vec2) -> impl Bundle {
     (
         Name::new("Damage Text"),
         StateScoped(Screen::Gameplay),
         Transform::from_translation(pos.extend(0.0)),
-        Text2d::new(format!("-{}", amount)),
+        Text2d::new(format!("-{:.1}", amount)),
         TempoEffect::new(0.5),
         TextFont::from_font_size(12.0),
         TextColor(RED.into()),

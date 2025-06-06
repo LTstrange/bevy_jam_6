@@ -8,6 +8,9 @@ use crate::demo::ChangePlayerStats;
 use crate::demo::gameplay::SpawnAttacker;
 use crate::prelude::*;
 
+mod types;
+use types::*;
+
 pub(super) fn plugin(app: &mut App) {
     app.init_resource::<ShopState>();
     app.add_observer(update_purchase_ui);
@@ -53,27 +56,26 @@ fn update_purchase_ui(
     commands.entity(parent.0).with_child(shop_state.render());
 }
 
-pub trait Upgrades {
-    fn row(&self, level: usize) -> Option<impl Bundle>;
-}
-
 const ATTACK_UPGRADES: AttackUpgrades = AttackUpgrades {
     item_name: "Upgrade Attack",
-    levels: &[(5, 2), (10, 3), (20, 4)],
+    effects: MultiplicativeEffect::new(5.5, 1.1),
+    costs: ExpCosts::new(10.0, 1.5),
 };
 
 struct AttackUpgrades {
     item_name: &'static str,
-    levels: &'static [(u32, u32)],
+    effects: MultiplicativeEffect,
+    costs: ExpCosts,
 }
 
 impl Upgrades for AttackUpgrades {
     fn row(&self, level: usize) -> Option<impl Bundle> {
-        if let Some(&(price, effect)) = self.levels.get(level) {
+        let mut combine_iter = self.effects.clone().zip(self.costs.clone());
+        if let Some((effect, price)) = combine_iter.nth(level) {
             Some(row!(
                 self.item_name,
                 price,
-                ChangePlayerStats::AddAttackEnergy(effect),
+                ChangePlayerStats::SetAttackEnergy(effect),
                 UpgradeItems::AttackUpgrade
             ))
         } else {
@@ -84,25 +86,24 @@ impl Upgrades for AttackUpgrades {
 
 const BUY_SPAWNERS: BuySpawners = BuySpawners {
     item_name: "Buy Spawner",
-    levels: &[50, 50, 50, 50],
+    costs: ExpCosts::new(50.0, 1.5),
 };
 struct BuySpawners {
     item_name: &'static str,
-    levels: &'static [u32],
+    costs: ExpCosts,
 }
 
 impl Upgrades for BuySpawners {
     fn row(&self, level: usize) -> Option<impl Bundle> {
-        if let Some(&price) = self.levels.get(level) {
-            Some(row!(
+        let mut costs_iter = self.costs.clone();
+        costs_iter.nth(level).map(|price| {
+            row!(
                 self.item_name,
                 price,
                 SpawnAttacker,
                 UpgradeItems::BuySpawner
-            ))
-        } else {
-            None
-        }
+            )
+        })
     }
 }
 

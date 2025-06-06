@@ -13,14 +13,14 @@ pub(super) fn plugin(app: &mut App) {
     app.add_plugins((level::plugin, ui::plugin, gameplay::plugin));
 
     app.insert_resource(PlayerStats {
-        attack_energy: 5, // Initial attack energy
+        attack_energy: 5.0, // Initial attack energy
     });
 
     app.add_observer(
         |t: Trigger<ChangePlayerStats>, mut player_stats: ResMut<PlayerStats>| match t.event() {
-            ChangePlayerStats::AddAttackEnergy(amount) => {
-                player_stats.attack_energy += amount;
-                info!("Added attack energy: {}", amount);
+            ChangePlayerStats::SetAttackEnergy(amount) => {
+                player_stats.attack_energy = *amount;
+                info!("Set attack energy: {}", amount);
             } // ChangePlayerStats::SetDraggableAttacker(value) => {
               //     player_stats.draggable_attacker = *value;
               //     info!("Set draggable attacker: {}", value);
@@ -32,10 +32,10 @@ pub(super) fn plugin(app: &mut App) {
 #[derive(Resource, Reflect, Debug, Default)]
 #[reflect(Resource)]
 struct PlayerStats {
-    pub attack_energy: u32,
+    pub attack_energy: f32,
 }
 
 #[derive(Event, Debug)]
 pub enum ChangePlayerStats {
-    AddAttackEnergy(u32),
+    SetAttackEnergy(f32),
 }

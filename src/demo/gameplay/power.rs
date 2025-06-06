@@ -6,7 +6,7 @@ use bevy::color::palettes::{
 use crate::prelude::*;
 
 pub(super) fn plugin(app: &mut App) {
-    app.insert_resource(Power::new(20, 1.0 / 5.0));
+    app.insert_resource(Power::new(20.0, 1.0 / 5.0));
 
     app.add_systems(Update, update_power_ui.run_if(in_state(Screen::Gameplay)));
 
@@ -16,8 +16,8 @@ pub(super) fn plugin(app: &mut App) {
 #[derive(Resource, Reflect, Debug, Default)]
 #[reflect(Resource)]
 pub struct Power {
-    current: u32,
-    max: u32,
+    current: f32,
+    max: f32,
     timer: Timer,
 }
 
@@ -26,7 +26,7 @@ pub struct Power {
 struct PowerUI;
 
 impl Power {
-    fn new(max: u32, regen_interval: f32) -> Self {
+    fn new(max: f32, regen_interval: f32) -> Self {
         Self {
             current: max,
             max,
@@ -34,17 +34,17 @@ impl Power {
         }
     }
 
-    pub fn current(&self) -> u32 {
+    pub fn current(&self) -> f32 {
         self.current
     }
 
-    pub fn consume(&mut self, amount: u32) -> u32 {
+    pub fn consume(&mut self, amount: f32) -> f32 {
         let output = self.current.min(amount);
-        self.current = self.current.saturating_sub(output);
+        self.current = (self.current - output).max(0.0);
         output
     }
 
-    fn regenerate(&mut self, amount: u32) {
+    fn regenerate(&mut self, amount: f32) {
         self.current = (self.current + amount).min(self.max);
     }
 }
@@ -52,7 +52,7 @@ impl Power {
 fn regenerate_power(mut power: ResMut<Power>, time: Res<Time>) {
     // Example regeneration logic: regenerate 1 power every 1 seconds
     if power.timer.tick(time.delta()).just_finished() {
-        power.regenerate(1);
+        power.regenerate(1.0);
     }
 }
 
@@ -100,6 +100,6 @@ fn update_power_ui(
     let (mut text, parent) = text.into_inner();
     let mut bar = bar.get_mut(parent.0).expect("Power UI bar not found");
 
-    text.0 = format!("Power: {}/{}", power.current(), power.max);
-    bar.width = Val::Percent((power.current() as f32 / power.max as f32) * 100.0);
+    text.0 = format!("Power: {:.0}/{}", power.current(), power.max);
+    bar.width = Val::Percent((power.current() / power.max) * 100.0);
 }
