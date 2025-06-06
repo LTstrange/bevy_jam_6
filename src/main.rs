@@ -18,6 +18,8 @@ use bevy::{asset::AssetMetaCheck, prelude::*};
 use bevy_asset_loader::prelude::*;
 use bevy_rand::{plugin::EntropyPlugin, prelude::WyRand};
 
+pub use camera::CursorEvents;
+
 #[allow(unused_imports)]
 mod prelude {
     pub use bevy::prelude::*;

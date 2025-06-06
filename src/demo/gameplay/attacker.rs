@@ -2,6 +2,7 @@ use bevy::color::palettes::css::*;
 use rand::seq::IndexedRandom;
 
 use crate::{
+    CursorEvents,
     audio::sound_effect,
     demo::{
         PlayerStats,
@@ -27,17 +28,9 @@ pub(super) fn plugin(app: &mut App) {
     );
 
     app.add_observer(
-        |t: Trigger<Pointer<Drag>>, mut attackers: Query<&mut Transform, With<Attacker>>| {
-            if let Ok(mut transform) = attackers.get_mut(t.target()) {
-                transform.translation.x += t.delta.x;
-                transform.translation.y -= t.delta.y;
-            }
-        },
-    );
-
-    app.add_observer(
         |_: Trigger<SpawnAttacker>, mut commands: Commands, mut entropy: GlobalEntropy<WyRand>| {
-            commands.spawn(attacker(Vec2::ZERO, 1.0, entropy.fork_rng()));
+            let attacker = commands.spawn(attacker(Vec2::ZERO, 1.0, entropy.fork_rng()));
+            setup_cursor_icon(attacker);
         },
     );
 }
@@ -128,4 +121,29 @@ fn attack_dust(
             attacker.timer.reset();
         }
     }
+}
+
+fn setup_cursor_icon(mut attacker: EntityCommands) {
+    attacker.observe(|_: Trigger<Pointer<Over>>, mut commands: Commands| {
+        commands.trigger(CursorEvents::Over);
+    });
+    attacker.observe(|_: Trigger<Pointer<Out>>, mut commands: Commands| {
+        commands.trigger(CursorEvents::Out);
+    });
+
+    attacker.observe(|_: Trigger<Pointer<Pressed>>, mut commands: Commands| {
+        commands.trigger(CursorEvents::Pressed);
+    });
+    attacker.observe(|_: Trigger<Pointer<Released>>, mut commands: Commands| {
+        commands.trigger(CursorEvents::Released);
+    });
+
+    attacker.observe(
+        |t: Trigger<Pointer<Drag>>, mut attackers: Query<&mut Transform, With<Attacker>>| {
+            if let Ok(mut transform) = attackers.get_mut(t.target()) {
+                transform.translation.x += t.delta.x;
+                transform.translation.y -= t.delta.y;
+            }
+        },
+    );
 }
