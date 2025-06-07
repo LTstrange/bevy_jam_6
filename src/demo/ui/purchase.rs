@@ -181,8 +181,8 @@ define_upgrade!(
 
 define_upgrade!(
     no_effects:
-    BUY_SPAWNERS,
-    "Buy Spawner",
+    NEW_ATTACKER,
+    "New Attacker",
     ExpCosts,
     ExpCosts::new(50.0, 1.2),
     SpawnAttacker,
@@ -227,7 +227,7 @@ define_upgrade!(
 
 shop_state!(
     AttackUpgrade -> ATTACK_UPGRADES
-    BuySpawner -> BUY_SPAWNERS
+    NewAttacker -> NEW_ATTACKER
     EnhancePowerRegen -> ENHANCE_POWER_REGEN
     SpeedUpDustGen -> SPEED_UP_DUST_GEN
     UpgradePowerMax -> UPGRADE_POWER_MAX
