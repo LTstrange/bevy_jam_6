@@ -33,6 +33,7 @@ pub fn inventory_ui() -> impl Bundle {
     (
         Name::new("Inventory UI"),
         Node {
+            width: Val::Px(400.0),
             flex_direction: FlexDirection::Column,
             ..default()
         },

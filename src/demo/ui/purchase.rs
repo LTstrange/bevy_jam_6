@@ -106,6 +106,7 @@ macro_rules! shop_state {
                     Name::new("Purchase UI"),
                     PurchaseUI,
                     Node {
+                        width: Val::Px(400.0),
                         flex_direction: FlexDirection::Column,
                         row_gap: Val::Px(5.0),
                         ..default()
