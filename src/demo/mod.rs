@@ -4,6 +4,9 @@ mod gameplay;
 pub mod level;
 mod ui;
 
+#[cfg(feature = "dev")]
+pub use ui::inventory::Inventory;
+
 const GAME_AREA: Rect = Rect {
     min: Vec2::new(-200.0, -300.0),
     max: Vec2::new(200.0, 300.0),
