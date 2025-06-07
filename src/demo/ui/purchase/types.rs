@@ -14,7 +14,7 @@ pub trait Upgrades {
     fn row(&self, level: usize, item: UpgradeItems) -> Option<impl Bundle> {
         if let Some((effect, cost)) = self.get_current_upgrade(level) {
             Some(widget::row(
-                self.name(),
+                format!("{}", self.name()),
                 cost,
                 move |_t: Trigger<Pointer<Click>>,
                       mut inventory: ResMut<inventory::Inventory>,
