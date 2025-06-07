@@ -10,11 +10,13 @@ use crate::{
 pub trait Upgrades {
     type Effect: Event + Clone;
     fn name(&self) -> &'static str;
-    fn get_current_upgrade(&self, level: usize) -> Option<(Self::Effect, u32)>;
+    fn tips(&self) -> &'static str;
+    fn get_current_upgrade(&self, level: usize) -> Option<(Self::Effect, (f32, f32), u32)>;
     fn row(&self, level: usize, item: UpgradeItems) -> Option<impl Bundle> {
-        if let Some((effect, cost)) = self.get_current_upgrade(level) {
+        if let Some((effect, (prev, new), cost)) = self.get_current_upgrade(level) {
             Some(widget::row(
-                format!("{}", self.name()),
+                self.name(),
+                format!("{}: {:.1}->{:.1}", self.tips(), prev, new),
                 cost,
                 move |_t: Trigger<Pointer<Click>>,
                       mut inventory: ResMut<inventory::Inventory>,

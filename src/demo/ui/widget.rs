@@ -1,4 +1,3 @@
-#![allow(dead_code)]
 use bevy::ecs::spawn::SpawnWith;
 use bevy::ecs::system::IntoObserverSystem;
 use bevy::ui::Val::*;
@@ -9,27 +8,12 @@ use crate::theme::palette::*;
 use crate::theme::prelude::*;
 pub use crate::theme::widget::*;
 
-pub fn purchase_button<E, B, M, I>(text: impl Into<String>, action: I) -> impl Bundle
-where
-    E: Event,
-    B: Bundle,
-    I: IntoObserverSystem<E, B, M>,
-{
-    button_base(
-        text,
-        TextFont::from_font_size(24.0),
-        action,
-        Node {
-            width: Px(30.0),
-            height: Px(30.0),
-            align_items: AlignItems::Center,
-            justify_content: JustifyContent::Center,
-            ..default()
-        },
-    )
-}
-
-pub fn row<E, B, M, I>(item: impl Into<String>, price: u32, action: I) -> impl Bundle
+pub fn row<E, B, M, I>(
+    item_name: impl Into<String>,
+    tip: impl Into<String>,
+    price: u32,
+    action: I,
+) -> impl Bundle
 where
     E: Event,
     B: Bundle,
@@ -46,29 +30,37 @@ where
             align_items: AlignItems::Center,
             ..default()
         },
+        BackgroundColor::from(PURCHASE_ROW_BACKGROUND),
         BorderRadius::all(Val::Px(5.0)),
-        children![label(item.into()), buy_button(price, action),],
+        children![upgrade_text(item_name, tip), upgrade_button(price, action),],
     )
 }
 
-// pub fn row_done(item: impl Into<String>) -> impl Bundle {
-//     (
-//         Name::new("Row Done"),
-//         Node {
-//             width: Val::Percent(100.0),
-//             height: Val::Px(50.0),
-//             column_gap: Px(10.0),
-//             flex_direction: FlexDirection::Row,
-//             justify_content: JustifyContent::SpaceBetween,
-//             align_items: AlignItems::Center,
-//             ..default()
-//         },
-//         BorderRadius::all(Val::Px(5.0)),
-//         children![label(item.into()),],
-//     )
-// }
+fn upgrade_text(item_name: impl Into<String>, tip: impl Into<String>) -> impl Bundle {
+    (
+        Name::new("UpgradeText"),
+        Node {
+            flex_direction: FlexDirection::Column,
+            justify_content: JustifyContent::Center,
+            align_items: AlignItems::FlexStart,
+            ..default()
+        },
+        children![
+            (
+                Name::new("Item Name"),
+                Text::new(item_name.into()),
+                TextFont::from_font_size(20.0),
+            ),
+            (
+                Name::new("Tip"),
+                Text::new(tip.into()),
+                TextFont::from_font_size(16.0),
+            ),
+        ],
+    )
+}
 
-pub fn buy_button<E, B, M, I>(cost: u32, action: I) -> impl Bundle
+pub fn upgrade_button<E, B, M, I>(cost: u32, action: I) -> impl Bundle
 where
     E: Event,
     B: Bundle,
@@ -76,9 +68,9 @@ where
 {
     let action = IntoObserverSystem::into_system(action);
     (
-        Name::new("BuyButton"),
+        Name::new("UpgradeButton"),
         Node {
-            width: Px(120.0),
+            width: Px(100.0),
             height: Px(40.0),
             flex_direction: FlexDirection::Column,
             align_items: AlignItems::Center,
@@ -104,7 +96,7 @@ where
                     BorderRadius::all(Px(5.0)),
                     children![(
                         Name::new("Button Text"),
-                        Text::new("Buy"),
+                        Text::new("Upgrade"),
                         TextFont::from_font_size(16.0)
                     )],
                 ))
