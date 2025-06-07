@@ -41,9 +41,8 @@ macro_rules! define_upgrade {
         // $struct_name:ident,      // 结构体名
         $const_name:ident,       // 常量名
         $item_name:expr,         // item_name 字段值
-        $cost_type:ty,           // costs 类型
-        $cost_value:expr,        // costs 初始化值
-        $effect_output:ty,       // impl 中的 Effect 类型
+        $cost_type:ident::new($cost_init:expr, $cost_ratio:expr), // costs 类型和初始化值
+        $event_type:ident,       // impl 中的 Effect 类型
         $effect_fn:expr          // get_current_upgrade 返回的 effect 表达式
     ) => {
         #[allow(non_camel_case_types)]
@@ -54,11 +53,11 @@ macro_rules! define_upgrade {
 
         const $const_name: $const_name = $const_name {
             item_name: $item_name,
-            costs: $cost_value,
+            costs: $cost_type::new($cost_init, $cost_ratio),
         };
 
         impl Upgrades for $const_name {
-            type Effect = $effect_output;
+            type Effect = $event_type;
 
             fn name(&self) -> &'static str {
                 self.item_name
@@ -71,17 +70,14 @@ macro_rules! define_upgrade {
             }
         }
     };
-    // has effects
     (
         has_effects:
         $const_name:ident,       // 常量名
         $item_name:expr,         // item_name 字段值
         $effect_type:ty,         // effects 类型
         $effect_value:expr,      // effects 初始化值
-        $cost_type:ty,           // costs 类型
-        $cost_value:expr,        // costs 初始化值
-        $effect_output:ty,       // impl 中的 Effect 类型
-        $effect_fn:expr          // get_current_upgrade 返回的 effect 表达式
+        $cost_type:ident::new($cost_init:expr, $cost_ratio:expr), // costs 类型和初始化值
+        $event_type:ident::$effect_fn:ident        // effect 输出类型和函数名
     ) => {
         #[allow(non_camel_case_types)]
         struct $const_name {
@@ -93,11 +89,11 @@ macro_rules! define_upgrade {
         const $const_name: $const_name = $const_name {
             item_name: $item_name,
             effects: $effect_value,
-            costs: $cost_value,
+            costs: $cost_type::new($cost_init, $cost_ratio),
         };
 
         impl Upgrades for $const_name {
-            type Effect = $effect_output;
+            type Effect = $event_type;
 
             fn name(&self) -> &'static str {
                 self.item_name
@@ -106,7 +102,7 @@ macro_rules! define_upgrade {
             fn get_current_upgrade(&self, level: usize) -> Option<(Self::Effect, u32)> {
                 let mut combine_iter = self.effects.clone().zip(self.costs.clone());
                 let (effect, cost) = combine_iter.nth(level)?;
-                Some(($effect_fn(effect), cost))
+                Some(($event_type::$effect_fn(effect), cost))
             }
         }
     };
@@ -173,9 +169,7 @@ define_upgrade!(
     "Upgrade Attack",
     MultiplicativeEffect,
     MultiplicativeEffect::new(5.5, 1.1),
-    ExpCosts,
     ExpCosts::new(10.0, 1.2),
-    ChangePlayerStats,
     ChangePlayerStats::SetAttackEnergy
 );
 
@@ -183,10 +177,9 @@ define_upgrade!(
     no_effects:
     NEW_ATTACKER,
     "New Attacker",
-    ExpCosts,
     ExpCosts::new(50.0, 1.2),
     SpawnAttacker,
-    || SpawnAttacker // 因为没有 effect 参数
+    || SpawnAttacker // 因为没有 event 参数
 );
 
 define_upgrade!(
@@ -195,9 +188,7 @@ define_upgrade!(
     "Increase Power Regen",
     MultiplicativeEffect,
     MultiplicativeEffect::new(7.5, 1.5),
-    ExpCosts,
     ExpCosts::new(20.0, 1.6),
-    SetPowerStats,
     SetPowerStats::RegenSpeed
 );
 
@@ -207,9 +198,7 @@ define_upgrade!(
     "Speed Up Dust Generation",
     AdditiveEffect,
     AdditiveEffect::new(3.0, 1.2),
-    ExpCosts,
     ExpCosts::new(30.0, 1.3),
-    SetDustSpawnStats,
     SetDustSpawnStats::SpawnSpeed
 );
 
@@ -219,9 +208,7 @@ define_upgrade!(
     "Upgrade Power Max",
     AdditiveEffect,
     AdditiveEffect::new(24.0, 1.2),
-    ExpCosts,
     ExpCosts::new(40.0, 1.3),
-    SetPowerStats,
     SetPowerStats::PowerMax
 );
 
