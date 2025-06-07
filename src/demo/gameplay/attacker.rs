@@ -1,11 +1,11 @@
-use bevy::color::palettes::css::*;
+use bevy::color::palettes::{css::*, tailwind::*};
 use rand::seq::IndexedRandom;
 
 use crate::{
     CursorEvents,
     audio::sound_effect,
     demo::{
-        PlayerStats,
+        GAME_AREA, PlayerStats,
         gameplay::{damage::LIGHTING_RANGE, dust::Dust},
     },
     prelude::*,
@@ -24,7 +24,13 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(Update, tick_attacker_timer.in_set(AppSystems::TickTimers));
     app.add_systems(
         Update,
-        (attack_dust.run_if(resource_exists::<AttackerAssets>),).in_set(AppSystems::Update),
+        (
+            charge_attacker,
+            update_attacker_color,
+            attack_dust.run_if(resource_exists::<AttackerAssets>),
+        )
+            .chain()
+            .in_set(AppSystems::Update),
     );
 
     app.add_observer(
@@ -39,6 +45,7 @@ pub(super) fn plugin(app: &mut App) {
 #[reflect(Component)]
 struct Attacker {
     timer: Timer,
+    fully_charged: bool,
 }
 
 #[derive(Event, Debug, Clone)]
@@ -64,6 +71,7 @@ pub fn attacker(pos: Vec2, attack_interval: f32, entropy: Entropy<WyRand>) -> im
         Name::new("Attacker"),
         Attacker {
             timer: Timer::from_seconds(attack_interval, TimerMode::Once),
+            fully_charged: false,
         },
         entropy,
         Transform::from_translation(pos.extend(1.0)),
@@ -73,9 +81,43 @@ pub fn attacker(pos: Vec2, attack_interval: f32, entropy: Entropy<WyRand>) -> im
     )
 }
 
+fn update_attacker_color(attacker: Query<(&Transform, &Attacker, &mut Sprite)>) {
+    for (transform, attacker, mut sprite) in attacker {
+        // if attacker out of bounds, set color to BLACK
+        if !GAME_AREA.contains(transform.translation.truncate()) {
+            sprite.color = BLACK.into();
+            continue;
+        }
+        // mix color based on timer progress, from dark red to red
+        let progress = attacker.timer.fraction();
+        let progress = map_range(progress, 0.0..1.0, 0.5..1.0);
+        sprite.color = RED.mix(&BLACK, 1.0 - progress).into();
+        // if fully charged, set color to BLUE
+        if attacker.fully_charged {
+            sprite.color = YELLOW_300.into();
+        }
+    }
+}
+
 fn tick_attacker_timer(query: Query<&mut Attacker>, time: Res<Time>) {
     for mut attacker in query {
         attacker.timer.tick(time.delta());
+    }
+}
+
+fn charge_attacker(
+    attackers: Query<&mut Attacker>,
+    mut power: ResMut<Power>,
+    player_stats: Res<PlayerStats>,
+) {
+    for mut attacker in attackers {
+        if attacker.fully_charged {
+            continue; // Already fully charged
+        }
+        if attacker.timer.finished() && power.current() >= player_stats.attack_energy {
+            power.consume(player_stats.attack_energy);
+            attacker.fully_charged = true;
+        }
     }
 }
 
@@ -84,42 +126,41 @@ fn attack_dust(
     attacker: Query<(&mut Attacker, &mut Entropy<WyRand>, &Transform)>,
     player_stats: Res<PlayerStats>,
     attacker_assets: Res<AttackerAssets>,
-    power: Res<Power>,
     dust: Query<&Transform, With<Dust>>,
 ) {
-    let mut current_energy = power.current();
     for (mut attacker, mut entropy, attacker_trans) in attacker {
-        if attacker.timer.finished() {
-            if current_energy < player_stats.attack_energy {
-                continue; // No energy to attack
-            }
-            current_energy -= player_stats.attack_energy;
-
-            let has_dust = dust.iter().any(|dust_trans| {
-                let distance = dust_trans
-                    .translation
-                    .truncate()
-                    .distance_squared(attacker_trans.translation.truncate());
-                distance < LIGHTING_RANGE * LIGHTING_RANGE
-            });
-            if !has_dust {
-                continue; // No dust in range to attack
-            }
-
-            commands.spawn(generate_damage(
-                attacker_trans.translation.truncate(),
-                player_stats.attack_energy,
-                DamageType::Lightning,
-                entropy.fork_rng(),
-                None,
-            ));
-            commands.spawn(sound_effect(
-                attacker_assets.steps.choose(&mut entropy).unwrap().clone(),
-            ));
-
-            // Reset the attack timer
-            attacker.timer.reset();
+        if !GAME_AREA.contains(attacker_trans.translation.truncate()) {
+            continue; // Attacker is out of bounds
         }
+        if !attacker.fully_charged {
+            continue; // Attacker is not fully charged
+        }
+
+        let has_dust = dust.iter().any(|dust_trans| {
+            let distance = dust_trans
+                .translation
+                .truncate()
+                .distance_squared(attacker_trans.translation.truncate());
+            distance < LIGHTING_RANGE * LIGHTING_RANGE
+        });
+        if !has_dust {
+            continue; // No dust in range to attack
+        }
+
+        commands.spawn(generate_damage(
+            attacker_trans.translation.truncate(),
+            player_stats.attack_energy,
+            DamageType::Lightning,
+            entropy.fork_rng(),
+            None,
+        ));
+        commands.spawn(sound_effect(
+            attacker_assets.steps.choose(&mut entropy).unwrap().clone(),
+        ));
+
+        // Reset the attack timer and fully charged state
+        attacker.timer.reset();
+        attacker.fully_charged = false;
     }
 }
 
