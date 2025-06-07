@@ -1,7 +1,6 @@
 use bevy::color::palettes::css::*;
 
 use crate::{
-    demo::gameplay::power::Power,
     prelude::*,
     visual_effect::{AttackLine, TempoEffect},
 };
