@@ -181,7 +181,7 @@ define_upgrade!(
     ENERGY_CAP,
     "Energy Capacity",
     "Maximum energy",
-    AdditiveEffect::new(20.0, 1.2),
+    MultiplicativeEffect::new(20.0, 1.1),
     ExpCosts::new(40.0, 1.3),
     SetPowerStats,
     SetPowerStats::PowerMax
