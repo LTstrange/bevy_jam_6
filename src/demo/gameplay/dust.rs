@@ -1,7 +1,10 @@
-use bevy::diagnostic::{Diagnostic, DiagnosticPath, Diagnostics, RegisterDiagnostic};
+use bevy::diagnostic::Diagnostics;
 
 use crate::{
-    demo::{GAME_AREA, ui::inventory::Inventory},
+    demo::{
+        GAME_AREA,
+        ui::{collect_rate::DUST_COLLECT_RATE_DIAGNOSTIC, inventory::Inventory},
+    },
     prelude::*,
 };
 
@@ -14,9 +17,6 @@ pub(super) fn plugin(app: &mut App) {
         (cleanup_unalived_dust, despawn_dust)
             .chain()
             .in_set(AppSystems::Cleanup),
-    );
-    app.register_diagnostic(
-        Diagnostic::new(DUST_COLLECT_RATE_DIAGNOSTIC).with_smoothing_factor(1.0),
     );
 }
 
@@ -62,9 +62,6 @@ fn falling_dust(query: Query<(&mut Transform, &Velocity), With<Dust>>, time: Res
         transform.translation.y -= velocity.speed * time.delta_secs();
     }
 }
-
-pub const DUST_COLLECT_RATE_DIAGNOSTIC: DiagnosticPath =
-    DiagnosticPath::const_new("dust_collect_rate");
 
 fn cleanup_unalived_dust(
     mut commands: Commands,

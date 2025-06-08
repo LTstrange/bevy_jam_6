@@ -8,7 +8,6 @@ mod health;
 mod power;
 
 pub use attacker::SpawnAttacker;
-pub use dust::DUST_COLLECT_RATE_DIAGNOSTIC;
 pub use dust_spawner::{SetDustSpawnStats, dust_spawner};
 pub use power::{SetPowerStats, power_ui};
 

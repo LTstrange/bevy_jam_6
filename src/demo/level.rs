@@ -1,5 +1,6 @@
 //! Spawn the main level.
 
+use crate::demo::ui::collect_rate::goal_ui;
 use crate::prelude::*;
 
 use crate::{AssetsState, audio::music, screens::Screen};
@@ -62,6 +63,20 @@ pub fn spawn_level(
         StateScoped(Screen::Gameplay),
         GlobalZIndex(1),
         Pickable::IGNORE,
-        children![inventory_ui(), power_ui(), shop_state.render()],
+        children![
+            inventory_ui(),
+            (
+                Node {
+                    height: Val::Percent(100.0),
+                    flex_direction: FlexDirection::Column,
+                    justify_content: JustifyContent::SpaceBetween,
+                    align_items: AlignItems::Center,
+                    ..default()
+                },
+                Pickable::IGNORE,
+                children![goal_ui(), power_ui()]
+            ),
+            shop_state.render()
+        ],
     ));
 }
