@@ -7,7 +7,7 @@ use crate::{menus::Menu, screens::Screen, theme::widget};
 #[derive(Event, Debug)]
 pub struct CompleteTheGame;
 
-pub const COMPLETE_COLLECTION_RATE: f64 = 8.0;
+pub const COMPLETE_COLLECTION_RATE: f64 = 6.0 * 8.0;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(Menu::Complete), spawn_complete_menu);
@@ -34,7 +34,7 @@ fn spawn_complete_menu(mut commands: Commands) {
                 ..default()
             },
             children![
-                widget::header("Game Over: The Dark Truth"),
+                widget::header("Mission Complete: The Dark Truth"),
                 text_block(),
                 widget::button("Continue", close_menu),
                 widget::button("Quit to title", quit_to_title),
