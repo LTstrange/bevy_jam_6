@@ -77,7 +77,7 @@ pub fn power_ui() -> impl Bundle {
     (
         Name::new("Power UI"),
         Node {
-            width: Val::Px(200.0),
+            width: Val::Px(300.0),
             // height: Val::Px(40.0),
             align_items: AlignItems::Start,
             justify_content: JustifyContent::Start,
@@ -96,7 +96,7 @@ pub fn power_ui() -> impl Bundle {
             BackgroundColor(GREEN_500.into()),
             children![(
                 PowerUI,
-                Text::new("Power: 333 / 999"),
+                Text::new("Energy: 333 / 999"),
                 TextLayout::new(JustifyText::Left, LineBreak::NoWrap),
                 TextFont::default(),
                 TextColor(BLACK.into()),
@@ -117,6 +117,6 @@ fn update_power_ui(
     let (mut text, parent) = text.into_inner();
     let mut bar = bar.get_mut(parent.0).expect("Power UI bar not found");
 
-    text.0 = format!("Power: {:.0}/{:.0}", power.current(), power.max);
+    text.0 = format!("Energy: {:.0}/{:.0}", power.current(), power.max);
     bar.width = Val::Percent((power.current() / power.max) * 100.0);
 }

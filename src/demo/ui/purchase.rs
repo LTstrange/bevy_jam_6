@@ -139,8 +139,8 @@ macro_rules! shop_state {
 }
 
 define_upgrade!(
-    ATTACK_UPGRADES,
-    "Attack Amount",
+    STATIC_DISCHARGE_POWER,
+    "Static Discharge Power",
     "Max release",
     MultiplicativeEffect,
     MultiplicativeEffect::new(5.0, 1.1),
@@ -150,31 +150,31 @@ define_upgrade!(
 );
 
 define_upgrade!(
-    NEW_ATTACKER,
-    "New Attacker",
-    "Number",
+    NEW_DISCHARGE_POINT,
+    "Discharge Points",
+    "Number of points",
     AdditiveEffect,
     AdditiveEffect::new(1.0, 1.0),
-    ExpCosts::new(50.0, 1.2),
+    ExpCosts::new(25.0, 1.4),
     SpawnAttacker,
     |_| SpawnAttacker // 因为没有 event 参数
 );
 
 define_upgrade!(
-    ENHANCE_POWER_REGEN,
-    "Charge Power",
-    "Amount per sec",
+    ENERGY_RECOVERY,
+    "Energy Recovery",
+    "Recovery per sec",
     MultiplicativeEffect,
     MultiplicativeEffect::new(5.0, 1.5),
-    ExpCosts::new(20.0, 1.6),
+    ExpCosts::new(15.0, 1.6),
     SetPowerStats,
     SetPowerStats::RegenSpeed
 );
 
 define_upgrade!(
-    SPEED_UP_DUST_GEN,
-    "Dust Generation",
-    "Number per sec",
+    POLLUTION_RATE,
+    "Pollution Rate",
+    "Particles per sec",
     AdditiveEffect,
     AdditiveEffect::new(2.0, 1.2),
     ExpCosts::new(30.0, 1.3),
@@ -183,9 +183,9 @@ define_upgrade!(
 );
 
 define_upgrade!(
-    UPGRADE_POWER_MAX,
-    "Power Max",
-    "Maximum",
+    ENERGY_CAP,
+    "Energy Capacity",
+    "Maximum energy",
     AdditiveEffect,
     AdditiveEffect::new(20.0, 1.2),
     ExpCosts::new(40.0, 1.3),
@@ -194,9 +194,9 @@ define_upgrade!(
 );
 
 shop_state!(
-    AttackUpgrade -> ATTACK_UPGRADES
-    NewAttacker -> NEW_ATTACKER
-    EnhancePowerRegen -> ENHANCE_POWER_REGEN
-    SpeedUpDustGen -> SPEED_UP_DUST_GEN
-    UpgradePowerMax -> UPGRADE_POWER_MAX
+    StaticDischargePower -> STATIC_DISCHARGE_POWER
+    EnergyRecovery -> ENERGY_RECOVERY
+    NewDischargePoint -> NEW_DISCHARGE_POINT
+    PollutionRate -> POLLUTION_RATE
+    EnergyCap -> ENERGY_CAP
 );
