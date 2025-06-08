@@ -168,16 +168,6 @@ define_upgrade!(
 );
 
 define_upgrade!(
-    POLLUTION_RATE,
-    "Pollution Rate",
-    "Particles per sec",
-    AdditiveEffect::new(2.0, 1.1),
-    ExpCosts::new(50.0, 1.4),
-    SetDustSpawnStats,
-    SetDustSpawnStats::SpawnSpeed
-);
-
-define_upgrade!(
     ENERGY_CAP,
     "Energy Capacity",
     "Maximum energy",
@@ -185,6 +175,16 @@ define_upgrade!(
     ExpCosts::new(40.0, 1.3),
     SetPowerStats,
     SetPowerStats::PowerMax
+);
+
+define_upgrade!(
+    POLLUTION_RATE,
+    "Pollution Rate",
+    "Particles per sec",
+    AdditiveEffect::new(2.0, 0.5),
+    ExpCosts::new(30.0, 1.3),
+    SetDustSpawnStats,
+    SetDustSpawnStats::SpawnSpeed
 );
 
 shop_state!(
