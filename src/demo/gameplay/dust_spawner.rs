@@ -87,5 +87,9 @@ fn spawn_dust(
 }
 
 fn gizmos(mut gizmos: Gizmos) {
-    gizmos.rect_2d(Isometry2d::default(), GAME_AREA.size(), Color::BLACK);
+    gizmos.rect_2d(
+        Isometry2d::from_translation(GAME_AREA.center()),
+        GAME_AREA.size(),
+        Color::BLACK,
+    );
 }

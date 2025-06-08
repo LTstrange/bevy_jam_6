@@ -6,11 +6,12 @@ use bevy::{
 use crate::{
     menus::{COMPLETE_COLLECTION_RATE, CompleteTheGame},
     prelude::*,
+    theme::palette::PURCHASE_ROW_BACKGROUND,
 };
 
 pub(super) fn plugin(app: &mut App) {
     app.register_diagnostic(
-        Diagnostic::new(DUST_COLLECT_RATE_DIAGNOSTIC).with_smoothing_factor(1.0),
+        Diagnostic::new(DUST_COLLECT_RATE_DIAGNOSTIC).with_smoothing_factor(5.0),
     );
 
     app.add_systems(Update, update_collect_rate);
@@ -52,8 +53,11 @@ pub fn goal_ui() -> impl Bundle {
             flex_direction: FlexDirection::Column,
             justify_content: JustifyContent::SpaceBetween,
             align_items: AlignItems::Center,
+            padding: UiRect::horizontal(Val::Px(10.0)),
             ..default()
         },
+        BorderRadius::all(Val::Px(5.0)),
+        BackgroundColor(PURCHASE_ROW_BACKGROUND),
         StateScoped(Screen::Gameplay),
         children![
             (

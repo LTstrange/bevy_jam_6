@@ -8,8 +8,8 @@ mod ui;
 pub use ui::inventory::Inventory;
 
 const GAME_AREA: Rect = Rect {
-    min: Vec2::new(-200.0, -300.0),
-    max: Vec2::new(200.0, 300.0),
+    min: Vec2::new(-200.0, -350.0),
+    max: Vec2::new(200.0, 250.0),
 };
 
 pub(super) fn plugin(app: &mut App) {

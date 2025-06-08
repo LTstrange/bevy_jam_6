@@ -77,7 +77,7 @@ pub fn power_ui() -> impl Bundle {
     (
         Name::new("Power UI"),
         Node {
-            width: Val::Px(300.0),
+            width: Val::Percent(100.0),
             // height: Val::Px(40.0),
             align_items: AlignItems::Start,
             justify_content: JustifyContent::Start,

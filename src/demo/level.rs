@@ -69,12 +69,13 @@ pub fn spawn_level(
                 Node {
                     height: Val::Percent(100.0),
                     flex_direction: FlexDirection::Column,
-                    justify_content: JustifyContent::SpaceBetween,
+                    justify_content: JustifyContent::Start,
                     align_items: AlignItems::Center,
+                    row_gap: Val::Px(10.0),
                     ..default()
                 },
                 Pickable::IGNORE,
-                children![goal_ui(), power_ui()]
+                children![goal_ui(), power_ui(),]
             ),
             shop_state.render()
         ],
