@@ -110,8 +110,8 @@ fn deal_damage(
                 let (_, mut health, _) = dust.get_mut(nearest_dust)?;
                 // random the amount of damage to apply
                 let deal_amount = entropy.random_range((amount / 2.0)..=*amount);
+                let deal_amount = deal_amount.clamp(0.0, health.current() * 1.2);
                 health.apply_damage(deal_amount);
-                // power.consume(deal_amount);
 
                 attacked_dust.push(nearest_dust);
                 commands.send_event(AttackDustEvent {
