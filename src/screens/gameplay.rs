@@ -2,7 +2,12 @@
 
 use bevy::{input::common_conditions::input_just_pressed, prelude::*, ui::Val::*};
 
-use crate::{Pause, demo::level::spawn_level, menus::Menu, screens::Screen};
+use crate::{
+    Pause,
+    demo::level::spawn_level,
+    menus::{CompleteTheGame, Menu},
+    screens::Screen,
+};
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(Screen::Gameplay), spawn_level);
@@ -10,19 +15,23 @@ pub(super) fn plugin(app: &mut App) {
     // Toggle pause on key press.
     app.add_systems(
         Update,
-        (
-            (pause, spawn_pause_overlay, open_pause_menu).run_if(
-                in_state(Screen::Gameplay)
-                    .and(in_state(Menu::None))
-                    .and(input_just_pressed(KeyCode::KeyP).or(input_just_pressed(KeyCode::Escape))),
-            ),
-            close_menu.run_if(
-                in_state(Screen::Gameplay)
-                    .and(not(in_state(Menu::None)))
-                    .and(input_just_pressed(KeyCode::KeyP)),
-            ),
+        (pause, spawn_pause_overlay, open_pause_menu).run_if(
+            in_state(Screen::Gameplay)
+                .and(in_state(Menu::None))
+                .and(input_just_pressed(KeyCode::Escape)),
         ),
     );
+
+    // trigger complete menu
+    app.add_systems(
+        Update,
+        (pause, open_complete_menu).run_if(
+            in_state(Screen::Gameplay)
+                .and(in_state(Menu::None))
+                .and(on_event::<CompleteTheGame>),
+        ),
+    );
+
     app.add_systems(OnExit(Screen::Gameplay), (close_menu, unpause));
     app.add_systems(
         OnEnter(Menu::None),
@@ -54,6 +63,10 @@ fn spawn_pause_overlay(mut commands: Commands) {
 
 fn open_pause_menu(mut next_menu: ResMut<NextState<Menu>>) {
     next_menu.set(Menu::Pause);
+}
+
+fn open_complete_menu(mut next_menu: ResMut<NextState<Menu>>) {
+    next_menu.set(Menu::Complete);
 }
 
 fn close_menu(mut next_menu: ResMut<NextState<Menu>>) {

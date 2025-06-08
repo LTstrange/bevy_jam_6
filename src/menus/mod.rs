@@ -1,11 +1,14 @@
 //! The game's menus and transitions between them.
 
+mod complete;
 mod credits;
 mod main;
 mod pause;
 mod settings;
 
 use bevy::prelude::*;
+
+pub use complete::{COMPLETE_COLLECTION_RATE, CompleteTheGame};
 
 pub(super) fn plugin(app: &mut App) {
     app.init_state::<Menu>();
@@ -15,6 +18,7 @@ pub(super) fn plugin(app: &mut App) {
         main::plugin,
         settings::plugin,
         pause::plugin,
+        complete::plugin,
     ));
 }
 
@@ -27,4 +31,5 @@ pub enum Menu {
     Credits,
     Settings,
     Pause,
+    Complete,
 }

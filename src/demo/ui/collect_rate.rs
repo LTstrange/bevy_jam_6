@@ -3,7 +3,10 @@ use bevy::{
     diagnostic::{Diagnostic, DiagnosticPath, DiagnosticsStore, RegisterDiagnostic},
 };
 
-use crate::prelude::*;
+use crate::{
+    menus::{COMPLETE_COLLECTION_RATE, CompleteTheGame},
+    prelude::*,
+};
 
 pub(super) fn plugin(app: &mut App) {
     app.register_diagnostic(
@@ -11,10 +14,34 @@ pub(super) fn plugin(app: &mut App) {
     );
 
     app.add_systems(Update, update_collect_rate);
+
+    app.add_systems(
+        Update,
+        send_complete_event.run_if(in_state(Screen::Gameplay)),
+    );
 }
 
 pub const DUST_COLLECT_RATE_DIAGNOSTIC: DiagnosticPath =
     DiagnosticPath::const_new("dust_collect_rate");
+
+pub fn send_complete_event(
+    mut commands: Commands,
+    mut marker: Local<bool>,
+    diagnostics: Res<DiagnosticsStore>,
+) {
+    if *marker {
+        return; // Already sent the event
+    }
+    if let Some(rate) = diagnostics
+        .get(&DUST_COLLECT_RATE_DIAGNOSTIC)
+        .and_then(|rate| rate.smoothed())
+    {
+        if rate >= COMPLETE_COLLECTION_RATE {
+            *marker = true; // Set marker to true to prevent multiple sends
+            commands.send_event(CompleteTheGame);
+        }
+    }
+}
 
 pub fn goal_ui() -> impl Bundle {
     (
@@ -72,12 +99,11 @@ fn row() -> impl Bundle {
 fn update_collect_rate(
     diagnostics: Res<DiagnosticsStore>,
     mut textspan: Single<&mut TextSpan, With<CollectRateTextSpan>>,
-) -> Result {
+) {
     if let Some(rate) = diagnostics
         .get(&DUST_COLLECT_RATE_DIAGNOSTIC)
         .and_then(|rate| rate.smoothed())
     {
         textspan.0 = format!("{:.1}", rate);
     }
-    Ok(())
 }
