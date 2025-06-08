@@ -117,6 +117,6 @@ fn update_power_ui(
     let (mut text, parent) = text.into_inner();
     let mut bar = bar.get_mut(parent.0).expect("Power UI bar not found");
 
-    text.0 = format!("Power: {:.0}/{}", power.current(), power.max);
+    text.0 = format!("Power: {:.0}/{:.0}", power.current(), power.max);
     bar.width = Val::Percent((power.current() / power.max) * 100.0);
 }
