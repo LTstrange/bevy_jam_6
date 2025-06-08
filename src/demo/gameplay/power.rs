@@ -6,7 +6,7 @@ use bevy::color::palettes::{
 use crate::prelude::*;
 
 pub(super) fn plugin(app: &mut App) {
-    app.insert_resource(Power::new(20.0, 5.0));
+    app.insert_resource(Power::new(8.0, 10.0));
 
     app.add_systems(Update, update_power_ui.run_if(in_state(Screen::Gameplay)));
 
@@ -102,9 +102,6 @@ pub fn power_ui() -> impl Bundle {
                 TextColor(BLACK.into()),
             )]
         )],
-        // Children::spawn(SpawnWith(|parent: &mut RelatedSpawner<_>| {
-        //     parent.spawn(Sprite::from_color(WHITE, Vec2::new(50.0, 20.0)));
-        // })),
     )
 }
 

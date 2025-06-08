@@ -161,7 +161,7 @@ define_upgrade!(
     ENERGY_RECOVERY,
     "Energy Recovery",
     "Recovery per sec",
-    MultiplicativeEffect::new(5.0, 1.5),
+    MultiplicativeEffect::new(10.0, 1.5),
     ExpCosts::new(15.0, 1.6),
     SetPowerStats,
     SetPowerStats::RegenSpeed
@@ -171,8 +171,8 @@ define_upgrade!(
     ENERGY_CAP,
     "Energy Capacity",
     "Maximum energy",
-    MultiplicativeEffect::new(20.0, 1.1),
-    ExpCosts::new(40.0, 1.3),
+    MultiplicativeEffect::new(8.0, 1.1),
+    ExpCosts::new(40.0, 1.2),
     SetPowerStats,
     SetPowerStats::PowerMax
 );

@@ -1,3 +1,5 @@
+use bevy::diagnostic::{Diagnostic, DiagnosticPath, Diagnostics, RegisterDiagnostic};
+
 use crate::{
     demo::{GAME_AREA, ui::inventory::Inventory},
     prelude::*,
@@ -12,6 +14,9 @@ pub(super) fn plugin(app: &mut App) {
         (cleanup_unalived_dust, despawn_dust)
             .chain()
             .in_set(AppSystems::Cleanup),
+    );
+    app.register_diagnostic(
+        Diagnostic::new(DUST_COLLECT_RATE_DIAGNOSTIC).with_smoothing_factor(1.0),
     );
 }
 
@@ -58,20 +63,26 @@ fn falling_dust(query: Query<(&mut Transform, &Velocity), With<Dust>>, time: Res
     }
 }
 
+pub const DUST_COLLECT_RATE_DIAGNOSTIC: DiagnosticPath =
+    DiagnosticPath::const_new("dust_collect_rate");
+
 fn cleanup_unalived_dust(
     mut commands: Commands,
     query: Query<(Entity, &Health, &Transform, &Dust)>,
     mut inventory: ResMut<Inventory>,
     mut rng: GlobalEntropy<WyRand>,
+    mut diagnostic: Diagnostics,
+    time: Res<Time>,
 ) -> Result {
+    let mut all_dust_data = 0;
     for (entity, health, transform, dust_ty) in query {
         if !health.is_alive() {
             match dust_ty {
                 Dust::Small => {
-                    inventory.dust_data += 1; // Small dust equals 1 dust data
+                    all_dust_data += 1; // Small dust equals 1 dust data
                 }
                 Dust::Big => {
-                    inventory.dust_data += 2; // Big dust equals 2 dust data
+                    all_dust_data += 2; // Big dust equals 2 dust data
                     let pos = transform.translation.truncate();
                     // despawn big dust, gen small dusts
                     let max_range = 100.0;
@@ -94,6 +105,10 @@ fn cleanup_unalived_dust(
             commands.entity(entity).despawn();
         }
     }
+    inventory.dust_data += all_dust_data;
+    diagnostic.add_measurement(&DUST_COLLECT_RATE_DIAGNOSTIC, || {
+        all_dust_data as f64 / time.delta_secs() as f64
+    });
     Ok(())
 }
 
