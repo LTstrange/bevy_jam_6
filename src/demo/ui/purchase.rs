@@ -176,8 +176,8 @@ define_upgrade!(
     "Pollution Rate",
     "Particles per sec",
     AdditiveEffect,
-    AdditiveEffect::new(2.0, 1.2),
-    ExpCosts::new(30.0, 1.3),
+    AdditiveEffect::new(2.0, 1.1),
+    ExpCosts::new(50.0, 1.4),
     SetDustSpawnStats,
     SetDustSpawnStats::SpawnSpeed
 );
@@ -197,6 +197,6 @@ shop_state!(
     StaticDischargePower -> STATIC_DISCHARGE_POWER
     EnergyRecovery -> ENERGY_RECOVERY
     NewDischargePoint -> NEW_DISCHARGE_POINT
-    PollutionRate -> POLLUTION_RATE
     EnergyCap -> ENERGY_CAP
+    PollutionRate -> POLLUTION_RATE
 );
