@@ -1,4 +1,4 @@
-use std::time::Duration;
+use bevy::math::ops::exp;
 
 use super::dust::dust;
 use crate::{
@@ -7,7 +7,6 @@ use crate::{
 };
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_systems(Update, tick_spawner_timer.in_set(AppSystems::TickTimers));
     app.add_systems(Update, (spawn_dust,).in_set(AppSystems::Update));
 
     app.add_systems(Update, gizmos.run_if(in_state(Screen::Gameplay)));
@@ -15,9 +14,7 @@ pub(super) fn plugin(app: &mut App) {
     app.add_observer(
         |t: Trigger<SetDustSpawnStats>, mut dust_spawner: Single<&mut DustSpawner>| {
             let SetDustSpawnStats::SpawnSpeed(speed) = t.event();
-            dust_spawner
-                .timer
-                .set_duration(Duration::from_secs_f32(1.0 / *speed));
+            dust_spawner.set_speed(*speed);
         },
     );
 }
@@ -39,30 +36,43 @@ pub enum SetDustSpawnStats {
 #[derive(Component, Reflect, Debug)]
 #[reflect(Component)]
 struct DustSpawner {
-    timer: Timer,
+    speed: f32,
 }
 
 impl DustSpawner {
     pub fn new(spawn_speed: f32) -> Self {
-        Self {
-            timer: Timer::from_seconds(1.0 / spawn_speed, TimerMode::Repeating),
-        }
+        Self { speed: spawn_speed }
+    }
+    fn set_speed(&mut self, speed: f32) {
+        self.speed = speed;
     }
 }
 
-fn tick_spawner_timer(mut spawner: Single<&mut DustSpawner>, time: Res<Time>) {
-    spawner.timer.tick(time.delta());
-}
-
-fn spawn_dust(mut commands: Commands, spawners: Single<(&mut DustSpawner, &mut Entropy<WyRand>)>) {
+const A: f32 = 1.5;
+const B: f32 = 5.0;
+fn spawn_dust(
+    mut commands: Commands,
+    spawners: Single<(&mut DustSpawner, &mut Entropy<WyRand>)>,
+    time: Res<Time>,
+    mut remainder: Local<f32>,
+) {
     let (spawner, mut entropy) = spawners.into_inner();
-    if spawner.timer.just_finished() {
+    let expected = spawner.speed * time.delta_secs() + *remainder;
+    let base_count = expected.floor();
+    *remainder = expected - base_count;
+    for _ in 0..base_count as usize {
+        // alpha: the ratio of big dust to small dust(0.0 to 1.0)
+        // alpha(speed) = sigmoid(speed; a, b)
+        let alpha = 1.0 / (1.0 + exp(-A * (spawner.speed - B)));
         let pos = Vec2::new(
             entropy.random_range(GAME_AREA.min.x..GAME_AREA.max.x),
             GAME_AREA.max.y,
         );
-        // TODO: random spawn big or small dust
-        commands.spawn(dust(pos, entropy.random_range(80.0..120.0), Dust::Big));
+        if entropy.random::<f32>() < alpha {
+            commands.spawn(dust(pos, entropy.random_range(80.0..120.0), Dust::Big));
+        } else {
+            commands.spawn(dust(pos, entropy.random_range(80.0..120.0), Dust::Small));
+        }
     }
 }
 

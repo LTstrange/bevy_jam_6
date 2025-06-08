@@ -66,27 +66,32 @@ fn cleanup_unalived_dust(
 ) -> Result {
     for (entity, health, transform, dust_ty) in query {
         if !health.is_alive() {
-            inventory.dust_data += 1;
-            commands.entity(entity).despawn();
-            if let Dust::Big = dust_ty {
-                let pos = transform.translation.truncate();
-                // despawn big dust, gen small dusts
-                let max_range = 100.0;
-                // 95% confidence interval for normal distribution
-                let distr = rand_distr::Normal::new(0.0, max_range / 2.45)?;
-                // spawn 4 small dusts around the position of big dust
-                for _ in 0..4 {
-                    let x = distr.sample(&mut rng);
-                    let y = distr.sample(&mut rng);
-                    let diff = Vec2::new(x, y).clamp_length_max(max_range);
-                    let speed = rng.random_range(80.0..120.0);
-                    commands.spawn(dust(
-                        (pos + diff).clamp(GAME_AREA.min, GAME_AREA.max),
-                        speed,
-                        Dust::Small,
-                    ));
+            match dust_ty {
+                Dust::Small => {
+                    inventory.dust_data += 1; // Small dust equals 1 dust data
+                }
+                Dust::Big => {
+                    inventory.dust_data += 2; // Big dust equals 2 dust data
+                    let pos = transform.translation.truncate();
+                    // despawn big dust, gen small dusts
+                    let max_range = 100.0;
+                    // 95% confidence interval for normal distribution
+                    let distr = rand_distr::Normal::new(0.0, max_range / 2.45)?;
+                    // spawn 4 small dusts around the position of big dust
+                    for _ in 0..4 {
+                        let x = distr.sample(&mut rng);
+                        let y = distr.sample(&mut rng);
+                        let diff = Vec2::new(x, y).clamp_length_max(max_range);
+                        let speed = rng.random_range(80.0..120.0);
+                        commands.spawn(dust(
+                            (pos + diff).clamp(GAME_AREA.min, GAME_AREA.max),
+                            speed,
+                            Dust::Small,
+                        ));
+                    }
                 }
             }
+            commands.entity(entity).despawn();
         }
     }
     Ok(())
