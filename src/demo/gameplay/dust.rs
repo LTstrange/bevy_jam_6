@@ -34,7 +34,6 @@ struct Velocity {
     speed: f32,
 }
 
-// TODO: impl health component for dust
 pub const DUST_HEALTH: f32 = 5.0;
 
 pub fn dust(pos: Vec2, speed: f32, dust: Dust) -> impl Bundle {

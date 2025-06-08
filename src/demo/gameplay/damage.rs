@@ -63,7 +63,6 @@ fn deal_damage(
     mut dust: Query<(Entity, &mut Health, &Transform), With<Dust>>,
     // mut power: ResMut<Power>,
 ) -> Result {
-    // TODO: allow attack same dust by multiple damage entities
     let mut attacked_dust = vec![];
     for (damage_entity, Damage { amount, previous }, damage_type, damage_transform, mut entropy) in
         damages
@@ -75,7 +74,6 @@ fn deal_damage(
             DamageType::Lightning => {
                 // search for dust entities within a certain radius
                 // TODO: use a more efficient spatial partitioning method
-                // TODO: Find the nearest dust entity instead of any
                 let damage_pos = damage_transform.translation.truncate();
 
                 // find dust entities that are within LIGHTING_RANGE of the damage entity
