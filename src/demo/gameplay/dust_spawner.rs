@@ -48,31 +48,41 @@ impl DustSpawner {
     }
 }
 
-const A: f32 = 1.5;
+const A: f32 = 1.0;
 const B: f32 = 5.0;
 fn spawn_dust(
     mut commands: Commands,
     spawners: Single<(&mut DustSpawner, &mut Entropy<WyRand>)>,
     time: Res<Time>,
-    mut remainder: Local<f32>,
+    mut big_remainder: Local<f32>,
+    mut small_remainder: Local<f32>,
 ) {
     let (spawner, mut entropy) = spawners.into_inner();
-    let expected = spawner.speed * time.delta_secs() + *remainder;
-    let base_count = expected.floor();
-    *remainder = expected - base_count;
-    for _ in 0..base_count as usize {
-        // alpha: the ratio of big dust to small dust(0.0 to 1.0)
-        // alpha(speed) = sigmoid(speed; a, b)
-        let alpha = 1.0 / (1.0 + exp(-A * (spawner.speed - B)));
+    let expected = spawner.speed * time.delta_secs();
+    let alpha = 1.0 / (1.0 + exp(-A * (spawner.speed - B)));
+    let big_dust_acount = expected * alpha;
+    let small_dust_acount = expected * (1.0 - alpha);
+    let big_dust_count = big_dust_acount + *big_remainder;
+    let small_dust_count = small_dust_acount + *small_remainder;
+    *small_remainder = small_dust_count.fract();
+    *big_remainder = big_dust_count.fract();
+
+    // gen small dust
+    for _ in 0..small_dust_count as usize {
         let pos = Vec2::new(
             entropy.random_range(GAME_AREA.min.x..GAME_AREA.max.x),
             GAME_AREA.max.y,
         );
-        if entropy.random::<f32>() < alpha {
-            commands.spawn(dust(pos, entropy.random_range(80.0..120.0), Dust::Big));
-        } else {
-            commands.spawn(dust(pos, entropy.random_range(80.0..120.0), Dust::Small));
-        }
+        commands.spawn(dust(pos, entropy.random_range(80.0..120.0), Dust::Small));
+    }
+
+    for _ in 0..big_dust_count as usize {
+        let pos = Vec2::new(
+            entropy.random_range(GAME_AREA.min.x..GAME_AREA.max.x),
+            GAME_AREA.max.y,
+        );
+
+        commands.spawn(dust(pos, entropy.random_range(80.0..120.0), Dust::Big));
     }
 }
 
