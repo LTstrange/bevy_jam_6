@@ -127,10 +127,6 @@ macro_rules! shop_state {
                     $(
                         $field => self.$field += 1,
                     )+
-                    // AttackUpgrade => self.attack_upgrade_level += 1,
-                    // BuySpawner => self.buy_spawner_level += 1,
-                    // EnhancePowerRegen => self.enhance_power_regen_level += 1,
-                    // SpeedUpDustGen => self.speed_up_dust_gen_level += 1,
                 }
             }
         }
