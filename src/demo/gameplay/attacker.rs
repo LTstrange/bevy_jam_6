@@ -106,14 +106,23 @@ fn tick_attacker_timer(query: Query<&mut Attacker>, time: Res<Time>) {
 }
 
 fn charge_attacker(
-    attackers: Query<&mut Attacker>,
+    mut attackers: Query<&mut Attacker>,
     mut power: ResMut<Power>,
     player_stats: Res<PlayerStats>,
+    mut rng: GlobalEntropy<WyRand>,
 ) {
+    if power.current() < player_stats.attack_energy {
+        return; // Not enough power to charge any attacker
+    }
+    let mut attackers = attackers
+        .iter_mut()
+        .filter(|attacker| !attacker.fully_charged)
+        .filter(|attacker| attacker.timer.finished())
+        .collect::<Vec<_>>();
+
+    // charge in random order
+    attackers.shuffle(&mut rng);
     for mut attacker in attackers {
-        if attacker.fully_charged {
-            continue; // Already fully charged
-        }
         if attacker.timer.finished() && power.current() >= player_stats.attack_energy {
             power.consume(player_stats.attack_energy);
             attacker.fully_charged = true;
