@@ -25,7 +25,11 @@ impl Health {
         self.current -= damage.min(self.current);
     }
     pub fn is_alive(&self) -> bool {
-        self.current > 0.0
+        self.current > 0.5
+    }
+
+    pub fn current(&self) -> f32 {
+        self.current
     }
 
     pub fn is_max_health(&self) -> bool {
