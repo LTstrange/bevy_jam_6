@@ -50,7 +50,7 @@ struct HealthBar(Vec2, Entity);
 #[require(Transform)]
 struct HealthBarCompose;
 
-pub fn health_bar_ui(health: f32, offset: Vec2, size: Vec2) -> impl Bundle {
+pub fn health_bar_and_ui(health: f32, offset: Vec2, size: Vec2) -> impl Bundle {
     (
         Health::new(health),
         Children::spawn(SpawnWith(move |parent: &mut RelatedSpawner<_>| {

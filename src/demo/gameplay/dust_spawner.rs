@@ -1,7 +1,10 @@
 use std::time::Duration;
 
 use super::dust::dust;
-use crate::{demo::GAME_AREA, prelude::*};
+use crate::{
+    demo::{GAME_AREA, gameplay::dust::Dust},
+    prelude::*,
+};
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(Update, tick_spawner_timer.in_set(AppSystems::TickTimers));
@@ -58,7 +61,8 @@ fn spawn_dust(mut commands: Commands, spawners: Single<(&mut DustSpawner, &mut E
             entropy.random_range(GAME_AREA.min.x..GAME_AREA.max.x),
             GAME_AREA.max.y,
         );
-        commands.spawn(dust(pos, entropy.random_range(80.0..120.0)));
+        // TODO: random spawn big or small dust
+        commands.spawn(dust(pos, entropy.random_range(80.0..120.0), Dust::Big));
     }
 }
 
