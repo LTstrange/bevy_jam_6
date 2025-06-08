@@ -8,11 +8,18 @@ use crate::{
 pub(super) fn plugin(app: &mut App) {
     // app.init_resource::<Inventory>();
     app.register_type::<Inventory>();
-    app.insert_resource(Inventory { dust_data: 0 });
+    app.insert_resource(Inventory {
+        dust_data: 0,
+        timer: Timer::from_seconds(0.5, TimerMode::Repeating),
+    });
 
     app.add_systems(
         Update,
-        update_inventory_ui.run_if(resource_changed::<Inventory>),
+        (
+            update_inventory_ui.run_if(resource_changed::<Inventory>),
+            add_dust_data_constantly.run_if(in_state(Screen::Gameplay)),
+        )
+            .in_set(AppSystems::Update),
     );
 }
 
@@ -20,6 +27,7 @@ pub(super) fn plugin(app: &mut App) {
 #[reflect(Resource)]
 pub struct Inventory {
     pub dust_data: u32,
+    timer: Timer,
 }
 
 #[derive(Component, Reflect, Debug)]
@@ -43,6 +51,12 @@ pub fn inventory_ui() -> impl Bundle {
             row("Dust Data: ", InventoryFields::dust_data),
         ],
     )
+}
+
+fn add_dust_data_constantly(mut inventory: ResMut<Inventory>, time: Res<Time>) {
+    if inventory.timer.tick(time.delta()).just_finished() {
+        inventory.dust_data += 1; // Increment dust data every second
+    }
 }
 
 fn update_inventory_ui(
