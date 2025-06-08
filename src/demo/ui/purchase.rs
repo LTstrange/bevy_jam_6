@@ -40,9 +40,8 @@ macro_rules! define_upgrade {
         $const_name:ident,       // 常量名
         $item_name:expr,         // item_name 字段值
         $tips:expr,         // tips 字段值
-        $effect_type:ty,         // effects 类型
-        $effect_value:expr,      // effects 初始化值
-        $cost_type:ident::new($cost_init:expr, $cost_ratio:expr), // costs 类型和初始化值
+        $effect_type:ident::new($effect_init:expr, $effect_ratio:expr),      // effects
+        $cost_type:ident::new($cost_init:expr, $cost_ratio:expr), // costs
         $event_type:ty,       // 输出event 的类型
         $effect_fn:expr        // 输出effect event 的函数
     ) => {
@@ -57,7 +56,7 @@ macro_rules! define_upgrade {
         const $const_name: $const_name = $const_name {
             item_name: $item_name,
             tips: $tips,
-            effects: $effect_value,
+            effects: $effect_type::new($effect_init, $effect_ratio),
             costs: $cost_type::new($cost_init, $cost_ratio),
         };
 
@@ -142,7 +141,6 @@ define_upgrade!(
     STATIC_DISCHARGE_POWER,
     "Static Discharge Power",
     "Max release",
-    MultiplicativeEffect,
     MultiplicativeEffect::new(5.0, 1.1),
     ExpCosts::new(10.0, 1.2),
     ChangePlayerStats,
@@ -153,7 +151,6 @@ define_upgrade!(
     NEW_DISCHARGE_POINT,
     "Discharge Points",
     "Number of points",
-    AdditiveEffect,
     AdditiveEffect::new(1.0, 1.0),
     ExpCosts::new(25.0, 1.4),
     SpawnAttacker,
@@ -164,7 +161,6 @@ define_upgrade!(
     ENERGY_RECOVERY,
     "Energy Recovery",
     "Recovery per sec",
-    MultiplicativeEffect,
     MultiplicativeEffect::new(5.0, 1.5),
     ExpCosts::new(15.0, 1.6),
     SetPowerStats,
@@ -175,7 +171,6 @@ define_upgrade!(
     POLLUTION_RATE,
     "Pollution Rate",
     "Particles per sec",
-    AdditiveEffect,
     AdditiveEffect::new(2.0, 1.1),
     ExpCosts::new(50.0, 1.4),
     SetDustSpawnStats,
@@ -186,7 +181,6 @@ define_upgrade!(
     ENERGY_CAP,
     "Energy Capacity",
     "Maximum energy",
-    AdditiveEffect,
     AdditiveEffect::new(20.0, 1.2),
     ExpCosts::new(40.0, 1.3),
     SetPowerStats,
